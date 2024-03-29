@@ -2,14 +2,23 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.4'
     id 'io.spring.dependency-management' version '1.1.4'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
 }
 
 group = 'org.zh'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '22'
+    sourceCompatibility = '17'
 }
+
+javafx {
+    version = "22"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+mainClassName = 'org.zh.chatter.ChatterRemakeApplication'
 
 configurations {
     compileOnly {
