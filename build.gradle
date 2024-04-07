@@ -43,3 +43,24 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// 添加一个自定义任务用于下载源代码
+task downloadSources(type: Sync) {
+    description = '下载源代码'
+    group = 'build'
+
+    // 设置下载源代码的目标目录
+    into "$buildDir/sources"
+
+    // 配置要下载源代码的依赖
+    from configurations.compileClasspath
+    include "**/*.jar"
+
+    // 设置下载源代码的后缀
+    eachFile { FileCopyDetails file ->
+        def name = file.name
+        if (name.endsWith('.jar')) {
+            def sourceName = "${name.substring(0, name.lastIndexOf('.'))}-sources.jar"
+        }
+    }
+}

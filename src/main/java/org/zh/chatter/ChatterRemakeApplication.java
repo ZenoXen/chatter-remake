@@ -6,8 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.net.URL;
+import org.springframework.core.io.ClassPathResource;
 
 @SpringBootApplication
 public class ChatterRemakeApplication extends Application {
@@ -18,13 +17,10 @@ public class ChatterRemakeApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        URL resource = getClass().getResource("scene.fxml");
-        Parent root = FXMLLoader.load(resource);
-
+        Parent root = FXMLLoader.load(new ClassPathResource("fxml/scene.fxml").getURL());
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-
-        stage.setTitle("JavaFX and Gradle");
+        scene.getStylesheets().add(new ClassPathResource("css/styles.css").getURL().toExternalForm());
+        stage.setTitle("局域网聊天室");
         stage.setScene(scene);
         stage.show();
     }
