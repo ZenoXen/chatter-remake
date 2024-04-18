@@ -1,0 +1,6 @@
+chatter-remake
+版本：Beta 0.0.1
+作者：ZenoXen
+发布日期：2024-04-17
+github仓库：https://github.com/ZenoXen/chatter-remake
+如有任何建议请提issue

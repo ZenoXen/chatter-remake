@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.zh.chatter.controller.NotificationBoardController">
+    <ScrollPane hbarPolicy="NEVER">
+        <ListView fx:id="notificationBoard" prefHeight="570.0" prefWidth="150.0"/>
+    </ScrollPane>
+</VBox>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1">
+    <fx:include source="top-menubar.fxml"/>
+    <HBox>
+        <fx:include source="chat-area.fxml"/>
+        <fx:include source="notification-board.fxml"/>
+    </HBox>
+</VBox>
