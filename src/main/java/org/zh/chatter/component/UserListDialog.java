@@ -1,5 +1,6 @@
 package org.zh.chatter.component;
 
+import cn.hutool.core.collection.CollectionUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
@@ -15,10 +16,12 @@ public class UserListDialog extends Dialog<Void> {
     public UserListDialog(List<UserVO> users) {
         this.setTitle(DIALOG_TITLE);
         tableView = new TableView<>();
+        TableColumn<UserVO, String> idColumn = new TableColumn<>("用户id");
         TableColumn<UserVO, String> nameColumn = new TableColumn<>("用户名");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
+        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         ObservableList<TableColumn<UserVO, ?>> tableColumns = tableView.getColumns();
-        tableColumns.add(nameColumn);
+        tableColumns.addAll(CollectionUtil.newArrayList(idColumn, nameColumn));
         tableView.setItems(FXCollections.observableList(users));
         this.getDialogPane().setContent(tableView);
         this.getDialogPane().getButtonTypes().add(new ButtonType("关闭", ButtonBar.ButtonData.CANCEL_CLOSE));

@@ -1,5 +1,6 @@
 package org.zh.chatter.controller;
 
+import cn.hutool.core.lang.UUID;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -22,6 +23,7 @@ import java.util.ResourceBundle;
 //todo 帮助文档
 @Controller
 public class ChatAreaController implements Initializable {
+    private static final KeyCodeCombination SEND_MESSAGE_SHORTCUT = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN);
     @FXML
     private TextArea inputArea;
     @FXML
@@ -47,7 +49,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void handleShortcutSend(KeyEvent keyEvent) {
-        if (new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN).match(keyEvent)) {
+        if (SEND_MESSAGE_SHORTCUT.match(keyEvent)) {
             this.handleMessageSend();
         }
     }
@@ -58,7 +60,7 @@ public class ChatAreaController implements Initializable {
 
     public void showUserList(MouseEvent mouseEvent) {
         //todo 需要从其他地方获取用户列表
-        UserListDialog dialog = new UserListDialog(Collections.singletonList(new UserVO(null, "test-user")));
+        UserListDialog dialog = new UserListDialog(Collections.singletonList(new UserVO(UUID.randomUUID().toString(), "test-user")));
         dialog.showAndWait();
     }
 }
