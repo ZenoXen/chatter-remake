@@ -12,6 +12,8 @@ public class CurrentUserInfoHolder implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        //todo 需要可以修改当前用户昵称
         currentUser = NodeUserBO.generateOne();
+        //todo 当前用户加入用户列表
     }
 }

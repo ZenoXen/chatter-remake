@@ -10,7 +10,6 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.NetworkUtil;
-import org.zh.chatter.controller.NotificationBoardController;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.model.bo.BroadcastAddressBO;
@@ -26,14 +25,13 @@ public class UdpServer implements Runnable, DisposableBean {
     private final CurrentUserInfoHolder currentUserInfoHolder;
     private final Integer port;
     private final ObjectMapper objectMapper;
-    private final NotificationBoardController notificationBoardController;
 
     public UdpServer(UdpCommonDataDecoder udpCommonDataDecoder,
                      UdpCommonChannelInboundHandler udpCommonChannelInboundHandler,
                      UdpCommonDataEncoder udpCommonDataEncoder,
                      CurrentUserInfoHolder currentUserInfoHolder,
                      ObjectMapper objectMapper,
-                     @Value("${app.port.heart-beat}") Integer port, NotificationBoardController notificationBoardController) throws InterruptedException {
+                     @Value("${app.port.heart-beat}") Integer port) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group)
@@ -53,7 +51,6 @@ public class UdpServer implements Runnable, DisposableBean {
         this.currentUserInfoHolder = currentUserInfoHolder;
         this.objectMapper = objectMapper;
         this.port = port;
-        this.notificationBoardController = notificationBoardController;
     }
 
     @Override
