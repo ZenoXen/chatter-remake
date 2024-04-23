@@ -2,13 +2,17 @@ package org.zh.chatter.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.net.InetAddress;
 
 @Data
 @AllArgsConstructor
-public class CommonDataDTO {
+@NoArgsConstructor
+public class UdpCommonDataDTO {
     private Integer type;
-    private InetAddress address;
+    private InetAddress fromAddress;
+    private InetAddress toAddress;
+    private Integer port;
     private String content;
 }

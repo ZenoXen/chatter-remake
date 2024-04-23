@@ -8,27 +8,31 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.model.dto.CommonDataDTO;
+import org.zh.chatter.NetworkUtil;
+import org.zh.chatter.model.dto.UdpCommonDataDTO;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
 @Slf4j
-public class CommonDataDecoder extends MessageToMessageDecoder<DatagramPacket> {
+public class UdpCommonDataDecoder extends MessageToMessageDecoder<DatagramPacket> {
 
     @Resource
     private ObjectMapper objectMapper;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, DatagramPacket msg, List<Object> out) throws Exception {
+        if (NetworkUtil.isLocalAddress(msg.sender().getAddress())) {
+            return;
+        }
         ByteBuf byteBuf = msg.content();
         if (byteBuf.readableBytes() <= 0) {
             return;
         }
-        CommonDataDTO commonDataDTO = objectMapper.readValue(byteBuf.toString(StandardCharsets.UTF_8), CommonDataDTO.class);
-        commonDataDTO.setAddress(msg.sender().getAddress());
-        log.debug("接收commonDataDTO: {}", commonDataDTO);
-        out.add(commonDataDTO);
+        UdpCommonDataDTO udpCommonDataDTO = objectMapper.readValue(byteBuf.toString(StandardCharsets.UTF_8), UdpCommonDataDTO.class);
+        udpCommonDataDTO.setFromAddress(msg.sender().getAddress());
+        log.info("接收commonDataDTO: {}", udpCommonDataDTO);
+        out.add(udpCommonDataDTO);
     }
 }

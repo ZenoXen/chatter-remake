@@ -1,6 +1,7 @@
 package org.zh.chatter.model.bo;
 
 import cn.hutool.core.lang.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 public class NodeUserBO {
     private String id;
     private String username;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime joinTime;
 
     private static final String DEFAULT_USERNAME = "群聊用户";
