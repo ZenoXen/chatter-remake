@@ -1,6 +1,6 @@
 package org.zh.chatter.controller;
 
-import cn.hutool.core.lang.UUID;
+import jakarta.annotation.Resource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -12,12 +12,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.UserListDialog;
+import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.model.vo.ChatMessageVO;
-import org.zh.chatter.model.vo.UserVO;
 
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.ResourceBundle;
 
 //todo 帮助文档
@@ -29,6 +28,8 @@ public class ChatAreaController implements Initializable {
     @FXML
     private ListView<ChatMessageVO> messageArea;
     private ObservableList<ChatMessageVO> chatMessageList;
+    @Resource
+    private NodeManager nodeManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -59,8 +60,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        //todo 需要从其他地方获取用户列表
-        UserListDialog dialog = new UserListDialog(Collections.singletonList(new UserVO(UUID.randomUUID().toString(), "test-user")));
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList());
         dialog.showAndWait();
     }
 }

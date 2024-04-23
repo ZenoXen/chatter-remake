@@ -35,7 +35,9 @@ public class ChatterRemakeApplication extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(new ClassPathResource(FXML_PATH).getURL());
+        FXMLLoader loader = new FXMLLoader(new ClassPathResource(FXML_PATH).getURL());
+        loader.setControllerFactory(applicationContext::getBean);
+        Parent root = loader.load();
         Scene scene = new Scene(root);
         scene.getStylesheets().add(new ClassPathResource(CSS_PATH).getURL().toExternalForm());
         stage.setTitle(WINDOW_TITLE);

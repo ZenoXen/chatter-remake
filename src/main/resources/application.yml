@@ -1,3 +1,7 @@
 spring:
   application:
     name: chatter-remake
+
+app:
+  port:
+    heart-beat: 7749

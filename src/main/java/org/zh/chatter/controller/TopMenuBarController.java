@@ -32,4 +32,8 @@ public class TopMenuBarController {
         alert.setContentText(new ClassPathResource(ABOUT_FILE_PATH).getContentAsString(StandardCharsets.UTF_8));
         alert.showAndWait();
     }
+
+    public void changeName(ActionEvent actionEvent) {
+
+    }
 }
