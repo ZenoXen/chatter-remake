@@ -1,8 +1,6 @@
 package org.zh.chatter.controller;
 
 import jakarta.annotation.Resource;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
@@ -12,6 +10,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.UserListDialog;
+import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.model.bo.NodeUserBO;
@@ -30,18 +29,18 @@ public class ChatAreaController implements Initializable {
     private TextArea inputArea;
     @FXML
     private ListView<ChatMessageVO> messageArea;
-    private ObservableList<ChatMessageVO> chatMessageList;
     @Resource
     private NodeManager nodeManager;
     @Resource
     private UdpServer udpServer;
     @Resource
     private CurrentUserInfoHolder currentUserInfoHolder;
+    @Resource
+    private ChatMessageManager chatMessageManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        chatMessageList = FXCollections.observableArrayList();
-        messageArea.setItems(chatMessageList);
+        messageArea.setItems(chatMessageManager.getChatMessageList());
         messageArea.setCellFactory(c -> new ChatMessageCell());
     }
 
@@ -52,13 +51,13 @@ public class ChatAreaController implements Initializable {
             return;
         }
         inputArea.clear();
-        NodeUserBO currentUser = this.currentUserInfoHolder.getCurrentUser();
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         this.showChatMessage(text, currentUser.getId(), currentUser.getUsername());
         udpServer.sendChatMessage(text);
     }
 
     public void showChatMessage(String text, String userId, String username) {
-        chatMessageList.add(new ChatMessageVO(userId, username, text, LocalDateTime.now()));
+        chatMessageManager.addChatMessage(new ChatMessageVO(userId, username, text, LocalDateTime.now()));
     }
 
     public void handleShortcutSend(KeyEvent keyEvent) throws Exception {
@@ -68,7 +67,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void handleClearMessage(MouseEvent mouseEvent) {
-        this.chatMessageList.clear();
+        chatMessageManager.clearChatMessage();
     }
 
     public void showUserList(MouseEvent mouseEvent) {

@@ -15,7 +15,7 @@ public class UserListDialog extends Dialog<Void> {
 
     public UserListDialog(List<UserVO> users) {
         this.setTitle(DIALOG_TITLE);
-        tableView = new TableView<>();
+        this.tableView = new TableView<>();
         TableColumn<UserVO, String> idColumn = new TableColumn<>("用户id");
         TableColumn<UserVO, String> nameColumn = new TableColumn<>("用户名");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("username"));
