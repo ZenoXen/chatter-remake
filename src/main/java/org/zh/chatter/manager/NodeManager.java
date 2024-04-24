@@ -31,7 +31,12 @@ public class NodeManager {
     }
 
     public void removeNode(InetAddress address) {
-        nodeMap.remove(address);
+        NodeBO removed = nodeMap.remove(address);
+        userIdSet.remove(removed.getUser().getId());
+    }
+
+    public Collection<NodeBO> getAllNodes() {
+        return nodeMap.values();
     }
 
     public List<UserVO> getUserList() {

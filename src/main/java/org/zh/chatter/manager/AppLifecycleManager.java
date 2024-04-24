@@ -11,6 +11,7 @@ import org.zh.chatter.network.UdpServer;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Order
@@ -21,6 +22,7 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private UdpServer udpServer;
+    private final AtomicBoolean isDisconnected = new AtomicBoolean(false);
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -41,5 +43,13 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
         udpServer.sendOfflineNotification();
         //停止监听
         udpServer.stopListening();
+    }
+
+    public boolean isDisconnected() {
+        return isDisconnected.get();
+    }
+
+    public void setIsDisconnected(boolean val) {
+        isDisconnected.set(val);
     }
 }
