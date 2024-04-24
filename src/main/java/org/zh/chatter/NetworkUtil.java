@@ -3,7 +3,10 @@ package org.zh.chatter;
 import cn.hutool.core.net.NetUtil;
 import org.zh.chatter.model.bo.BroadcastAddressBO;
 
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -27,7 +30,7 @@ public class NetworkUtil {
         return result;
     }
 
-    public static boolean isLocalAddress(InetAddress address) throws SocketException, UnknownHostException {
+    public static boolean isLocalAddress(InetAddress address) throws SocketException {
 
         // 判断是否是回环地址（loopback address）
         if (address.isLoopbackAddress()) {
@@ -47,7 +50,7 @@ public class NetworkUtil {
             Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
             while (interfaceAddresses.hasMoreElements()) {
                 InetAddress inetAddress = interfaceAddresses.nextElement();
-                if (inetAddress.equals(inetAddress)) {
+                if (address.equals(inetAddress)) {
                     return true; // 是本地地址
                 }
             }
