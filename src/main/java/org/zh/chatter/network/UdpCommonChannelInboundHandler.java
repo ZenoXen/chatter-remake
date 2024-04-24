@@ -13,6 +13,7 @@ import org.zh.chatter.model.bo.NodeBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
 
+import java.net.InetAddress;
 import java.time.LocalDateTime;
 
 @Component
@@ -30,6 +31,7 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         switch (typeEnum) {
             case HEARTBEAT -> this.handleHeartbeat(ctx, udpCommonDataDTO);
             case CHAT_MESSAGE -> this.handleChatMessage(ctx, udpCommonDataDTO);
+            case OFFLINE_NOTIFICATION -> this.handleOfflineNotification(ctx, udpCommonDataDTO);
             default -> log.error("接收到未知类型的udp消息：{}", udpCommonDataDTO);
         }
     }
@@ -43,7 +45,13 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         nodeBO.setAddress(udpCommonDataDTO.getFromAddress());
         nodeBO.setLastHeartTime(LocalDateTime.now());
         nodeBO.setUser(nodeUserBO);
+        nodeBO.setIsMySelf(false);
         nodeManager.addNode(nodeBO);
+    }
+
+    private void handleOfflineNotification(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) {
+        InetAddress fromAddress = udpCommonDataDTO.getFromAddress();
+        nodeManager.removeNode(fromAddress);
     }
 
     private void handleChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) {

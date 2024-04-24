@@ -1,6 +1,7 @@
 package org.zh.chatter.model.bo;
 
 import cn.hutool.core.lang.UUID;
+import cn.hutool.core.util.RandomUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -23,7 +24,7 @@ public class NodeUserBO {
     public static NodeUserBO generateOne() {
         NodeUserBO nodeUserBO = new NodeUserBO();
         nodeUserBO.setId(UUID.randomUUID().toString());
-        nodeUserBO.setUsername(DEFAULT_USERNAME);
+        nodeUserBO.setUsername(DEFAULT_USERNAME + RandomUtil.randomString(5));
         nodeUserBO.setJoinTime(LocalDateTime.now());
         return nodeUserBO;
     }

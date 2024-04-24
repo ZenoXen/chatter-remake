@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class UserVO {
     private String id;
     private String username;
+    private Boolean isMySelf;
 }

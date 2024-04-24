@@ -10,7 +10,8 @@ import java.util.stream.Collectors;
 @Getter
 public enum CommonDataTypeEnum {
     HEARTBEAT(1),
-    CHAT_MESSAGE(2);
+    CHAT_MESSAGE(2),
+    OFFLINE_NOTIFICATION(3);
     private final int code;
 
     private static final Map<Integer, CommonDataTypeEnum> CODE_MAP;

@@ -6,7 +6,6 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.NetworkUtil;
@@ -18,7 +17,7 @@ import org.zh.chatter.model.dto.UdpCommonDataDTO;
 
 @Component
 @Slf4j
-public class UdpServer implements Runnable, DisposableBean {
+public class UdpServer implements Runnable {
 
     private final EventLoopGroup group;
     private final Channel channel;
@@ -31,7 +30,7 @@ public class UdpServer implements Runnable, DisposableBean {
                      UdpCommonDataEncoder udpCommonDataEncoder,
                      CurrentUserInfoHolder currentUserInfoHolder,
                      ObjectMapper objectMapper,
-                     @Value("${app.port.heart-beat}") Integer port) throws InterruptedException {
+                     @Value("${app.port.udp}") Integer port) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group)
@@ -66,8 +65,7 @@ public class UdpServer implements Runnable, DisposableBean {
         }
     }
 
-    @Override
-    public void destroy() throws Exception {
+    public void stopListening() {
         channel.close();
     }
 
@@ -77,6 +75,15 @@ public class UdpServer implements Runnable, DisposableBean {
             UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.HEARTBEAT.getCode(), null, broadcastAddressBO.getAddress(), port, objectMapper.writeValueAsString(currentUser));
             channel.writeAndFlush(udpCommonDataDTO);
             log.info("发送心跳信息： {} {}", broadcastAddressBO.getNetworkInterface().getDisplayName(), broadcastAddressBO.getAddress().getHostAddress());
+        }
+    }
+
+    public void sendOfflineNotification() throws Exception {
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
+        for (BroadcastAddressBO broadcastAddressBO : NetworkUtil.getAllBroadcastAddresses()) {
+            UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.OFFLINE_NOTIFICATION.getCode(), null, broadcastAddressBO.getAddress(), port, objectMapper.writeValueAsString(currentUser));
+            channel.writeAndFlush(udpCommonDataDTO);
+            log.info("发送离线通知： {} {}", broadcastAddressBO.getNetworkInterface().getDisplayName(), broadcastAddressBO.getAddress().getHostAddress());
         }
     }
 }

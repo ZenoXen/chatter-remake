@@ -4,4 +4,4 @@ spring:
 
 app:
   port:
-    heart-beat: 7749
+    udp: 7749
