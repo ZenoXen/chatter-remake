@@ -45,6 +45,7 @@ public class HeartbeatScheduled {
         }
         try {
             udpServer.sendHeartbeat();
+            sendHeartbeatFailedCount.set(0);
         } catch (Exception e) {
             sendHeartbeatFailedCount.addAndGet(1);
             log.error("定时发送心跳信息失败：", e);
@@ -66,6 +67,6 @@ public class HeartbeatScheduled {
     public void scheduledNodeStatusCheck() {
         Collection<NodeBO> nodes = nodeManager.getAllNodes();
         LocalDateTime offlineMinTime = LocalDateTime.now().minusMinutes(NODE_OFFLINE_DURATION);
-        nodes.stream().filter(n -> n.getLastHeartTime().isBefore(offlineMinTime)).forEach(n -> nodeManager.removeNode(n.getAddress()));
+        nodes.stream().filter(n -> n.getLastHeartTime().isBefore(offlineMinTime) && !n.getIsMySelf()).forEach(n -> nodeManager.removeNode(n.getAddress()));
     }
 }

@@ -7,8 +7,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.controller.ChatAreaController;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
@@ -24,6 +26,8 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
     private ObjectMapper objectMapper;
     @Resource
     private NodeManager nodeManager;
+    @Resource
+    private ChatAreaController chatAreaController;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws Exception {
@@ -38,11 +42,15 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
 
     private void handleHeartbeat(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
         NodeUserBO nodeUserBO = objectMapper.readValue(udpCommonDataDTO.getContent(), NodeUserBO.class);
+        this.doHandleHeartBeat(nodeUserBO, udpCommonDataDTO.getFromAddress());
+    }
+
+    private void doHandleHeartBeat(NodeUserBO nodeUserBO, InetAddress fromAddress) {
         if (nodeUserBO.getId() == null || nodeUserBO.getUsername() == null) {
             return;
         }
         NodeBO nodeBO = new NodeBO();
-        nodeBO.setAddress(udpCommonDataDTO.getFromAddress());
+        nodeBO.setAddress(fromAddress);
         nodeBO.setLastHeartTime(LocalDateTime.now());
         nodeBO.setUser(nodeUserBO);
         nodeBO.setIsMySelf(false);
@@ -54,7 +62,10 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         nodeManager.removeNode(fromAddress);
     }
 
-    private void handleChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) {
-        //todo 处理聊天消息
+    private void handleChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
+        ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
+        NodeUserBO user = chatMessageBO.getUser();
+        this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
+        chatAreaController.showChatMessage(chatMessageBO.getMessage(), user.getId(), user.getUsername());
     }
 }

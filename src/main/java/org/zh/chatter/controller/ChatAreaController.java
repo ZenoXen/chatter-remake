@@ -12,8 +12,11 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.UserListDialog;
+import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
+import org.zh.chatter.network.UdpServer;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -30,6 +33,10 @@ public class ChatAreaController implements Initializable {
     private ObservableList<ChatMessageVO> chatMessageList;
     @Resource
     private NodeManager nodeManager;
+    @Resource
+    private UdpServer udpServer;
+    @Resource
+    private CurrentUserInfoHolder currentUserInfoHolder;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -38,18 +45,23 @@ public class ChatAreaController implements Initializable {
         messageArea.setCellFactory(c -> new ChatMessageCell());
     }
 
-    public void handleMessageSend() {
+    public void handleMessageSend() throws Exception {
         //清除输入框文本，并发送文本
         String text = inputArea.getText();
         if (Strings.isEmpty(text)) {
             return;
         }
         inputArea.clear();
-        chatMessageList.add(new ChatMessageVO(null, "test", text, LocalDateTime.now()));
-        //todo 广播消息
+        NodeUserBO currentUser = this.currentUserInfoHolder.getCurrentUser();
+        this.showChatMessage(text, currentUser.getId(), currentUser.getUsername());
+        udpServer.sendChatMessage(text);
     }
 
-    public void handleShortcutSend(KeyEvent keyEvent) {
+    public void showChatMessage(String text, String userId, String username) {
+        chatMessageList.add(new ChatMessageVO(userId, username, text, LocalDateTime.now()));
+    }
+
+    public void handleShortcutSend(KeyEvent keyEvent) throws Exception {
         if (SEND_MESSAGE_SHORTCUT.match(keyEvent)) {
             this.handleMessageSend();
         }

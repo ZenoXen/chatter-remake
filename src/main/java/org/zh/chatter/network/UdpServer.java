@@ -12,8 +12,11 @@ import org.zh.chatter.NetworkUtil;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.model.bo.BroadcastAddressBO;
+import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
+
+import java.time.LocalDateTime;
 
 @Component
 @Slf4j
@@ -84,6 +87,16 @@ public class UdpServer implements Runnable {
             UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.OFFLINE_NOTIFICATION.getCode(), null, broadcastAddressBO.getAddress(), port, objectMapper.writeValueAsString(currentUser));
             channel.writeAndFlush(udpCommonDataDTO);
             log.info("发送离线通知： {} {}", broadcastAddressBO.getNetworkInterface().getDisplayName(), broadcastAddressBO.getAddress().getHostAddress());
+        }
+    }
+
+    public void sendChatMessage(String message) throws Exception {
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
+        ChatMessageBO chatMessageBO = new ChatMessageBO(currentUser, message, LocalDateTime.now());
+        for (BroadcastAddressBO broadcastAddressBO : NetworkUtil.getAllBroadcastAddresses()) {
+            UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, broadcastAddressBO.getAddress(), port, objectMapper.writeValueAsString(chatMessageBO));
+            channel.writeAndFlush(udpCommonDataDTO);
+            log.info("发送聊天消息： {} {}", broadcastAddressBO.getNetworkInterface().getDisplayName(), broadcastAddressBO.getAddress().getHostAddress());
         }
     }
 }
