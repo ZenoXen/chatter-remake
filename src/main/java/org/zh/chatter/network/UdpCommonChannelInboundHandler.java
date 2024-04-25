@@ -8,13 +8,16 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.CommonDataTypeEnum;
+import org.zh.chatter.enums.NotificationTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.manager.NotificationManager;
 import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
 import org.zh.chatter.model.vo.ChatMessageVO;
+import org.zh.chatter.model.vo.NotificationVO;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
@@ -29,6 +32,8 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
     private NodeManager nodeManager;
     @Resource
     private ChatMessageManager chatMessageManager;
+    @Resource
+    private NotificationManager notificationManager;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws Exception {
@@ -52,15 +57,20 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         }
         NodeBO nodeBO = new NodeBO();
         nodeBO.setAddress(fromAddress);
-        nodeBO.setLastHeartTime(LocalDateTime.now());
+        LocalDateTime now = LocalDateTime.now();
+        nodeBO.setLastHeartTime(now);
         nodeBO.setUser(nodeUserBO);
         nodeBO.setIsMySelf(false);
-        nodeManager.addNode(nodeBO);
+        boolean added = nodeManager.addNode(nodeBO);
+        if (added) {
+            notificationManager.addNotification(new NotificationVO(NotificationTypeEnum.NEW_USER_JOINED, now, nodeUserBO.getUsername()));
+        }
     }
 
     private void handleOfflineNotification(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) {
         InetAddress fromAddress = udpCommonDataDTO.getFromAddress();
-        nodeManager.removeNode(fromAddress);
+        NodeBO removed = nodeManager.removeNode(fromAddress);
+        notificationManager.addNotification(new NotificationVO(NotificationTypeEnum.USER_LEFT, LocalDateTime.now(), removed.getUser().getUsername()));
     }
 
     private void handleChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {

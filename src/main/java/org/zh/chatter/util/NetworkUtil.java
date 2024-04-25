@@ -1,4 +1,4 @@
-package org.zh.chatter;
+package org.zh.chatter.util;
 
 import cn.hutool.core.net.NetUtil;
 import org.zh.chatter.model.bo.BroadcastAddressBO;

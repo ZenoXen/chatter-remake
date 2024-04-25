@@ -8,7 +8,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.NetworkUtil;
+import org.zh.chatter.util.NetworkUtil;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
 
 import java.nio.charset.StandardCharsets;

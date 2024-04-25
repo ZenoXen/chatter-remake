@@ -8,7 +8,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.NetworkUtil;
+import org.zh.chatter.util.NetworkUtil;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.model.bo.BroadcastAddressBO;

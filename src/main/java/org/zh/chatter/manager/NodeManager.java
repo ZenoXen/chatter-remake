@@ -21,18 +21,21 @@ public class NodeManager {
         this.userIdSet = new HashSet<>();
     }
 
-    public void addNode(NodeBO node) {
+    public boolean addNode(NodeBO node) {
         InetAddress address = node.getAddress();
         String userId = node.getUser().getId();
         if (!this.isNodeOrUserExists(address, userId)) {
             nodeMap.put(address, node);
             userIdSet.add(userId);
+            return true;
         }
+        return false;
     }
 
-    public void removeNode(InetAddress address) {
+    public NodeBO removeNode(InetAddress address) {
         NodeBO removed = nodeMap.remove(address);
         userIdSet.remove(removed.getUser().getId());
+        return removed;
     }
 
     public Collection<NodeBO> getAllNodes() {

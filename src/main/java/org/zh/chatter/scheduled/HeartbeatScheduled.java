@@ -4,9 +4,12 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.enums.NotificationTypeEnum;
 import org.zh.chatter.manager.AppLifecycleManager;
 import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.manager.NotificationManager;
 import org.zh.chatter.model.bo.NodeBO;
+import org.zh.chatter.model.vo.NotificationVO;
 import org.zh.chatter.network.UdpServer;
 
 import java.time.LocalDateTime;
@@ -26,6 +29,9 @@ public class HeartbeatScheduled {
 
     @Resource
     private AppLifecycleManager appLifecycleManager;
+
+    @Resource
+    private NotificationManager notificationManager;
 
     private final AtomicInteger sendHeartbeatFailedCount = new AtomicInteger(0);
 
@@ -67,6 +73,9 @@ public class HeartbeatScheduled {
     public void scheduledNodeStatusCheck() {
         Collection<NodeBO> nodes = nodeManager.getAllNodes();
         LocalDateTime offlineMinTime = LocalDateTime.now().minusMinutes(NODE_OFFLINE_DURATION);
-        nodes.stream().filter(n -> n.getLastHeartTime().isBefore(offlineMinTime) && !n.getIsMySelf()).forEach(n -> nodeManager.removeNode(n.getAddress()));
+        nodes.stream().filter(n -> n.getLastHeartTime().isBefore(offlineMinTime) && !n.getIsMySelf()).forEach(n -> {
+            NodeBO removed = nodeManager.removeNode(n.getAddress());
+            notificationManager.addNotification(new NotificationVO(NotificationTypeEnum.USER_LEFT, LocalDateTime.now(), removed.getUser().getUsername()));
+        });
     }
 }

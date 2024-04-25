@@ -14,7 +14,7 @@ public class NodeUserBO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime joinTime;
 
-    private static final String DEFAULT_USERNAME = "群聊用户";
+    private static final String DEFAULT_USERNAME = "用户";
 
     /**
      * 随机生成一个用户
