@@ -4,7 +4,7 @@ package org.zh.chatter.controller;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
+import javafx.scene.control.MenuBar;
 import javafx.stage.Stage;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
@@ -17,11 +17,11 @@ public class TopMenuBarController {
     private static final String ABOUT_ALERT_TITLE = "关于";
     private static final String ABOUT_FILE_PATH = "about.txt";
     @FXML
-    private MenuItem exitMenuItem;
+    private MenuBar topMenuBar;
 
     public void handleExit(ActionEvent actionEvent) {
         //退出
-        Stage stage = (Stage) exitMenuItem.getParentPopup().getOwnerWindow();
+        Stage stage = (Stage) topMenuBar.getScene().getWindow();
         stage.close();
     }
 
@@ -34,6 +34,6 @@ public class TopMenuBarController {
     }
 
     public void changeName(ActionEvent actionEvent) {
-
+        //todo 修改名字
     }
 }
