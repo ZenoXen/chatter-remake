@@ -14,7 +14,7 @@ public class NodeUserBO {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime joinTime;
 
-    private static final String DEFAULT_USERNAME = "用户";
+    private static final String DEFAULT_USERNAME_PREFIX = "用户";
 
     /**
      * 随机生成一个用户
@@ -24,7 +24,7 @@ public class NodeUserBO {
     public static NodeUserBO generateOne() {
         NodeUserBO nodeUserBO = new NodeUserBO();
         nodeUserBO.setId(UUID.randomUUID().toString());
-        nodeUserBO.setUsername(DEFAULT_USERNAME + RandomUtil.randomString(5));
+        nodeUserBO.setUsername(DEFAULT_USERNAME_PREFIX + RandomUtil.randomString(5));
         nodeUserBO.setJoinTime(LocalDateTime.now());
         return nodeUserBO;
     }
