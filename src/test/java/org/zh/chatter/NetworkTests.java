@@ -2,7 +2,9 @@ package org.zh.chatter;
 
 import cn.hutool.core.util.RandomUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.socket.DatagramPacket;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -22,6 +24,7 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.model.bo.BroadcastAddressBO;
 import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
@@ -32,6 +35,9 @@ import org.zh.chatter.network.UdpCommonDataDecoder;
 import org.zh.chatter.network.UdpCommonDataEncoder;
 import org.zh.chatter.util.NetworkUtil;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 
 @ExtendWith(ApplicationExtension.class)
@@ -83,22 +89,22 @@ public class NetworkTests {
         messageUser.setJoinTime(LocalDateTime.now());
         ChatMessageBO chatMessageBO = new ChatMessageBO(messageUser, randomStr, LocalDateTime.now());
         String content = objectMapper.writeValueAsString(chatMessageBO);
-        NetworkUtil.getAllBroadcastAddresses().stream().findAny().ifPresent(a -> {
-            UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, a.getAddress(), port, content);
-            embeddedChannel.writeInbound(udpCommonDataDTO);
-            //界面上是否有聊天记录
-            ListView listView = robot.lookup("#messageArea").queryAs(ListView.class);
-            NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
-            boolean messagePresent = listView.getItems().stream().anyMatch(l -> {
-                ChatMessageVO message = (ChatMessageVO) l;
-                return message.getMessage().equals(randomStr) && message.getSenderId().equals(testId) && message.getSenderName().equals(testUsername);
-            });
-            Assertions.assertTrue(messagePresent);
-            //用户列表是否有该用户
-            robot.clickOn("#userListButton");
-            TableView tableView = robot.lookup(".table-view").queryAs(TableView.class);
-            boolean hasUser = tableView.getItems().contains(new UserVO(messageUser.getId(), messageUser.getUsername(), false));
-            Assertions.assertTrue(hasUser);
+        BroadcastAddressBO addressBO = NetworkUtil.getAllBroadcastAddresses().stream().findAny().orElse(null);
+        assert addressBO != null;
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, addressBO.getAddress(), port, content);
+        DatagramPacket packet = new DatagramPacket(Unpooled.copiedBuffer(objectMapper.writeValueAsString(udpCommonDataDTO).getBytes(StandardCharsets.UTF_8)), new InetSocketAddress(udpCommonDataDTO.getToAddress(), udpCommonDataDTO.getPort()), new InetSocketAddress(InetAddress.getByName("192.168.49.78"), 7749));
+        embeddedChannel.writeInbound(packet);
+        //界面上是否有聊天记录
+        ListView listView = robot.lookup("#messageArea").queryAs(ListView.class);
+        boolean messagePresent = listView.getItems().stream().anyMatch(l -> {
+            ChatMessageVO message = (ChatMessageVO) l;
+            return message.getMessage().equals(randomStr) && message.getSenderId().equals(testId) && message.getSenderName().equals(testUsername);
         });
+        Assertions.assertTrue(messagePresent);
+        //用户列表是否有该用户
+        robot.clickOn("#userListButton");
+        TableView tableView = robot.lookup(".table-view").queryAs(TableView.class);
+        boolean hasUser = tableView.getItems().contains(new UserVO(messageUser.getId(), messageUser.getUsername(), false));
+        Assertions.assertTrue(hasUser);
     }
 }
