@@ -24,8 +24,13 @@ public class NodeUserBO {
     public static NodeUserBO generateOne() {
         NodeUserBO nodeUserBO = new NodeUserBO();
         nodeUserBO.setId(UUID.randomUUID().toString());
-        nodeUserBO.setUsername(DEFAULT_USERNAME_PREFIX + RandomUtil.randomString(5));
+        String username = generateRandomUsername();
+        nodeUserBO.setUsername(username);
         nodeUserBO.setJoinTime(LocalDateTime.now());
         return nodeUserBO;
+    }
+
+    private static String generateRandomUsername() {
+        return DEFAULT_USERNAME_PREFIX + RandomUtil.randomString(5);
     }
 }
