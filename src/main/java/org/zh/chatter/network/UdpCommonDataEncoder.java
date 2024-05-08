@@ -2,6 +2,7 @@ package org.zh.chatter.network;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageEncoder;
@@ -16,6 +17,7 @@ import java.util.List;
 
 @Component
 @Slf4j
+@ChannelHandler.Sharable
 public class UdpCommonDataEncoder extends MessageToMessageEncoder<UdpCommonDataDTO> {
 
     @Resource

@@ -2,6 +2,7 @@ package org.zh.chatter.network;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.annotation.Resource;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 
 @Component
 @Slf4j
+@ChannelHandler.Sharable
 public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<UdpCommonDataDTO> {
 
     @Resource
