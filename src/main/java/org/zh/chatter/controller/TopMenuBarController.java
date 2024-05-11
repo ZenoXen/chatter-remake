@@ -4,18 +4,20 @@ package org.zh.chatter.controller;
 import jakarta.annotation.Resource;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.NetworkInterfaceHolder;
+import org.zh.chatter.model.bo.NetworkInterfaceBO;
 
 import java.io.IOException;
+import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Controller
 public class TopMenuBarController {
@@ -25,11 +27,16 @@ public class TopMenuBarController {
     private static final String MODIFY_USERNAME_DIALOG_HEADER_TEXT = "请输入用户名";
     private static final String INPUT_INVALID_TITLE = "输入有误";
     private static final String INPUT_INVALID_CONTENT_TEXT = "输入不能为空";
+    private static final String CHANGE_NETWORK_INTERFACE_DIALOG_TITLE = "更换聊天网卡";
+    private static final String CHANGE_NETWORK_INTERFACE_HEADER_TEXT = "请从下列网卡中选择你的聊天网卡";
     @FXML
     private MenuBar topMenuBar;
 
     @Resource
     private CurrentUserInfoHolder currentUserInfoHolder;
+
+    @Resource
+    private NetworkInterfaceHolder networkInterfaceHolder;
 
     public void handleExit(ActionEvent actionEvent) {
         //退出
@@ -66,6 +73,24 @@ public class TopMenuBarController {
                 }
             }
             return username;
+        });
+    }
+
+    public void showChangeNetworkInterfacePopup(ActionEvent actionEvent) {
+        NetworkInterface selectedNetworkInterface = networkInterfaceHolder.getSelectedNetworkInterface();
+        Collection<NetworkInterface> allNetworkInterfaces = networkInterfaceHolder.getAllNetworkInterfaces();
+        ChoiceDialog<NetworkInterfaceBO> dialog = new ChoiceDialog<>(new NetworkInterfaceBO(selectedNetworkInterface), allNetworkInterfaces.stream().map(NetworkInterfaceBO::new).collect(Collectors.toList()));
+        dialog.setTitle(CHANGE_NETWORK_INTERFACE_DIALOG_TITLE);
+        dialog.setHeaderText(CHANGE_NETWORK_INTERFACE_HEADER_TEXT);
+        dialog.setContentText(null);
+        dialog.show();
+        dialog.setResultConverter(buttonType -> {
+            NetworkInterfaceBO networkInterfaceBO = null;
+            if (buttonType == ButtonType.OK) {
+                networkInterfaceBO = dialog.getSelectedItem();
+                networkInterfaceHolder.saveNetworkInterfaceReference(networkInterfaceBO.getNetworkInterface());
+            }
+            return networkInterfaceBO;
         });
     }
 }

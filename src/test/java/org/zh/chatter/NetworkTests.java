@@ -24,6 +24,7 @@ import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
 import org.zh.chatter.enums.CommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.NetworkInterfaceHolder;
 import org.zh.chatter.model.bo.BroadcastAddressBO;
 import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeUserBO;
@@ -33,7 +34,6 @@ import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.network.UdpCommonChannelInboundHandler;
 import org.zh.chatter.network.UdpCommonDataDecoder;
 import org.zh.chatter.network.UdpCommonDataEncoder;
-import org.zh.chatter.util.NetworkUtil;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -43,6 +43,7 @@ import java.time.LocalDateTime;
 @ExtendWith(ApplicationExtension.class)
 @SpringBootTest
 public class NetworkTests {
+    private static final String SENDER_ADDRESS = "192.168.126.3";
     @Autowired
     private ConfigurableApplicationContext applicationContext;
 
@@ -63,6 +64,8 @@ public class NetworkTests {
     private Integer port;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private NetworkInterfaceHolder networkInterfaceHolder;
 
     @Start
     public void start(Stage stage) throws Exception {
@@ -89,10 +92,10 @@ public class NetworkTests {
         messageUser.setJoinTime(LocalDateTime.now());
         ChatMessageBO chatMessageBO = new ChatMessageBO(messageUser, randomStr, LocalDateTime.now());
         String content = objectMapper.writeValueAsString(chatMessageBO);
-        BroadcastAddressBO addressBO = NetworkUtil.getAllBroadcastAddresses().stream().findAny().orElse(null);
+        BroadcastAddressBO addressBO = networkInterfaceHolder.getBroadcastAddressList().stream().findAny().orElse(null);
         assert addressBO != null;
         UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, addressBO.getAddress(), port, content);
-        DatagramPacket packet = new DatagramPacket(Unpooled.copiedBuffer(objectMapper.writeValueAsString(udpCommonDataDTO).getBytes(StandardCharsets.UTF_8)), new InetSocketAddress(udpCommonDataDTO.getToAddress(), udpCommonDataDTO.getPort()), new InetSocketAddress(InetAddress.getByName("192.168.49.78"), 7749));
+        DatagramPacket packet = new DatagramPacket(Unpooled.copiedBuffer(objectMapper.writeValueAsString(udpCommonDataDTO).getBytes(StandardCharsets.UTF_8)), new InetSocketAddress(udpCommonDataDTO.getToAddress(), udpCommonDataDTO.getPort()), new InetSocketAddress(InetAddress.getByName(SENDER_ADDRESS), 7749));
         embeddedChannel.writeInbound(packet);
         //界面上是否有聊天记录
         ListView listView = robot.lookup("#messageArea").queryAs(ListView.class);

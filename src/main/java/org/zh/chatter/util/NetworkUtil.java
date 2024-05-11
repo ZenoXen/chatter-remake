@@ -1,51 +1,23 @@
 package org.zh.chatter.util;
 
 import cn.hutool.core.net.NetUtil;
-import org.zh.chatter.model.bo.BroadcastAddressBO;
 
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.net.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
-import java.util.List;
 
 public class NetworkUtil {
-    public static List<BroadcastAddressBO> getAllBroadcastAddresses() throws Exception {
-        List<BroadcastAddressBO> result = new ArrayList<>();
-        for (NetworkInterface networkInterface : NetUtil.getNetworkInterfaces()) {
-            if (networkInterface.isLoopback()) {
-                continue;
-            }
-            List<InterfaceAddress> addresses = networkInterface.getInterfaceAddresses();
-            for (InterfaceAddress address : addresses) {
-                InetAddress broadcast = address.getBroadcast();
-                if (broadcast == null) {
-                    continue;
-                }
-                result.add(new BroadcastAddressBO(networkInterface, broadcast));
-            }
-        }
-        return result;
-    }
 
     public static boolean isLocalAddress(InetAddress address) throws SocketException {
-
         // 判断是否是回环地址（loopback address）
         if (address.isLoopbackAddress()) {
             return true;
         }
-
         // 获取所有网络接口
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface networkInterface = interfaces.nextElement();
-            // 排除回环接口和虚拟接口
-            if (networkInterface.isLoopback() || networkInterface.isVirtual()) {
-                continue;
-            }
-
             // 判断地址是否属于该网络接口
             Enumeration<InetAddress> interfaceAddresses = networkInterface.getInetAddresses();
             while (interfaceAddresses.hasMoreElements()) {
@@ -55,7 +27,31 @@ public class NetworkUtil {
                 }
             }
         }
-
         return false; // 不是本地地址
+    }
+
+    public static Collection<NetworkInterface> getAllSelectableNetworkInterfaces() throws SocketException {
+        Collection<NetworkInterface> allInterfaces = NetUtil.getNetworkInterfaces();
+        Collection<NetworkInterface> result = new ArrayList<>();
+        for (NetworkInterface networkInterface : allInterfaces) {
+            if (isNormalNetworkInterface(networkInterface)) {
+                result.add(networkInterface);
+            }
+        }
+        return result;
+    }
+
+    private static boolean isNormalNetworkInterface(NetworkInterface networkInterface) throws SocketException {
+        return !networkInterface.isLoopback() && !networkInterface.isVirtual() && networkInterface.getInetAddresses().hasMoreElements();
+    }
+
+    public static boolean isFromSelectedNetworkInterface(SocketAddress address, NetworkInterface networkInterface) throws SocketException {
+        DatagramSocket ds = new DatagramSocket();
+        ds.connect(address);
+        InetAddress localAddress = ds.getLocalAddress();
+        NetworkInterface localNetworkInterface = NetworkInterface.getByInetAddress(localAddress);
+        ds.disconnect();
+        ds.close();
+        return networkInterface.equals(localNetworkInterface);
     }
 }

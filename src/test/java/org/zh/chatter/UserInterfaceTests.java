@@ -2,13 +2,12 @@ package org.zh.chatter;
 
 import cn.hutool.core.util.RandomUtil;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.ListView;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -21,10 +20,13 @@ import org.testfx.api.FxAssert;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
+import org.testfx.matcher.base.NodeMatchers;
 import org.testfx.matcher.control.ListViewMatchers;
 import org.testfx.matcher.control.TableViewMatchers;
 import org.testfx.util.WaitForAsyncUtils;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.NetworkInterfaceHolder;
+import org.zh.chatter.model.bo.NetworkInterfaceBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.UserVO;
@@ -35,6 +37,7 @@ import java.util.concurrent.TimeUnit;
 @SpringBootTest
 public class UserInterfaceTests {
 
+    private static final String NETWORK_INTERFACE_NAME = "Realtek PCIe 2.5GbE Family Controller";
     @Autowired
     private ConfigurableApplicationContext applicationContext;
 
@@ -45,6 +48,8 @@ public class UserInterfaceTests {
     private Stage stage;
     @Autowired
     private CurrentUserInfoHolder currentUserInfoHolder;
+    @Autowired
+    private NetworkInterfaceHolder networkInterfaceHolder;
 
     @Start
     public void start(Stage stage) throws Exception {
@@ -110,5 +115,24 @@ public class UserInterfaceTests {
         TableView tableView = robot.lookup(".table-view").queryAs(TableView.class);
         boolean hasUser = tableView.getItems().contains(new UserVO(currentUser.getId(), currentUser.getUsername(), true));
         Assertions.assertTrue(hasUser);
+    }
+
+    @Test
+    public void testChangeNetworkInterface(FxRobot robot) throws InterruptedException {
+        MenuBar bar = robot.lookup("#topMenuBar").query();
+        MenuItem menuItem = bar.getMenus().get(0).getItems().get(1);
+        robot.interactNoWait(menuItem::fire);
+        ComboBox<NetworkInterfaceBO> box = robot.lookup(".combo-box").query();
+        FxAssert.verifyThat(box, NodeMatchers.isVisible());
+        for (Node child : box.getChildrenUnmodifiable()) {
+            if (child.getStyleClass().contains("arrow-button")) {
+                Node arrowRegion = ((Pane) child).getChildren().get(0);
+                robot.clickOn(arrowRegion);
+                Thread.sleep(100);
+                robot.clickOn(NETWORK_INTERFACE_NAME);
+            }
+        }
+        robot.press(KeyCode.ENTER);
+        Assertions.assertEquals(networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), NETWORK_INTERFACE_NAME);
     }
 }

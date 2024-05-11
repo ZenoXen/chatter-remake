@@ -21,6 +21,8 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
     @Resource
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
+    private NetworkInterfaceHolder networkInterfaceHolder;
+    @Resource
     private UdpServer udpServer;
     private final AtomicBoolean isDisconnected = new AtomicBoolean(false);
 
