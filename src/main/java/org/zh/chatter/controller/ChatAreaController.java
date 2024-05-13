@@ -52,8 +52,8 @@ public class ChatAreaController implements Initializable {
         }
         inputArea.clear();
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
-        this.showChatMessage(text, currentUser.getId(), currentUser.getUsername());
         udpServer.sendChatMessage(text);
+        this.showChatMessage(text, currentUser.getId(), currentUser.getUsername());
     }
 
     public void showChatMessage(String text, String userId, String username) {
