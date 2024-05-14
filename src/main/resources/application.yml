@@ -3,5 +3,7 @@ spring:
     name: chatter-remake
 
 app:
+  address:
+    multicast: 239.255.49.1
   port:
     udp: 7749

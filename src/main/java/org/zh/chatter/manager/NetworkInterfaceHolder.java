@@ -1,40 +1,38 @@
 package org.zh.chatter.manager;
 
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.model.bo.BroadcastAddressBO;
+import org.zh.chatter.model.bo.MulticastAddressBO;
 import org.zh.chatter.util.NetworkUtil;
 
+import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Getter
 public class NetworkInterfaceHolder {
     private final Collection<NetworkInterface> allNetworkInterfaces;
     private NetworkInterface selectedNetworkInterface;
-    private List<BroadcastAddressBO> broadcastAddressList;
+    private MulticastAddressBO selectedLocalAddress;
+    private InetSocketAddress multicastAddress;
 
-    public NetworkInterfaceHolder() throws SocketException {
-        this.broadcastAddressList = Collections.emptyList();
+    public NetworkInterfaceHolder(@Value("${app.port.udp}") Integer port,
+                                  @Value("${app.address.multicast}") String multicastAddress) throws SocketException {
         this.allNetworkInterfaces = NetworkUtil.getAllSelectableNetworkInterfaces();
         NetworkInterface defaultNetworkInterface = this.allNetworkInterfaces.stream().findFirst().orElse(null);
         this.saveNetworkInterfaceReference(defaultNetworkInterface);
+        this.multicastAddress = new InetSocketAddress(multicastAddress, port);
     }
 
     public void saveNetworkInterfaceReference(NetworkInterface networkInterface) {
         if (networkInterface == null) {
             return;
         }
-        List<BroadcastAddressBO> broadcastAddressList = networkInterface.getInterfaceAddresses().stream()
-                .filter(a -> a != null && a.getBroadcast() != null)
-                .map(a -> new BroadcastAddressBO(networkInterface, a.getBroadcast()))
-                .collect(Collectors.toList());
         this.selectedNetworkInterface = networkInterface;
-        this.broadcastAddressList = broadcastAddressList;
+        this.selectedLocalAddress = networkInterface.getInterfaceAddresses().stream().map(InterfaceAddress::getAddress).findAny().map(a -> new MulticastAddressBO(networkInterface, a)).orElse(null);
     }
 }

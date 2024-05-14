@@ -8,7 +8,7 @@ import java.net.NetworkInterface;
 
 @Data
 @AllArgsConstructor
-public class BroadcastAddressBO {
+public class MulticastAddressBO {
     private NetworkInterface networkInterface;
     private InetAddress address;
 }
