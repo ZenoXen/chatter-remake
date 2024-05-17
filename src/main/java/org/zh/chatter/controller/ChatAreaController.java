@@ -9,9 +9,11 @@ import javafx.scene.input.*;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
+import org.zh.chatter.component.FileTransferDialog;
 import org.zh.chatter.component.UserListDialog;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
@@ -25,6 +27,8 @@ import java.util.ResourceBundle;
 @Controller
 public class ChatAreaController implements Initializable {
     private static final KeyCodeCombination SEND_MESSAGE_SHORTCUT = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN);
+    public static final int FILE_TRANSFER_DIALOG_WIDTH = 300;
+    public static final int FIEL_TRANSFER_DIALOG_HEIGHT = 400;
     @FXML
     private TextArea inputArea;
     @FXML
@@ -37,6 +41,8 @@ public class ChatAreaController implements Initializable {
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private ChatMessageManager chatMessageManager;
+    @Resource
+    private FileTaskManager fileTaskManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -72,6 +78,11 @@ public class ChatAreaController implements Initializable {
 
     public void showUserList(MouseEvent mouseEvent) {
         UserListDialog dialog = new UserListDialog(nodeManager.getUserList());
-        dialog.showAndWait();
+        dialog.show();
+    }
+
+    public void openFileTransferDialog(MouseEvent mouseEvent) {
+        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager);
+        dialog.show();
     }
 }
