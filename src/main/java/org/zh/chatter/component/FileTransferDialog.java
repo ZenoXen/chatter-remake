@@ -30,9 +30,9 @@ public class FileTransferDialog extends Dialog<Void> {
     private final int height;
     private final VBox topBox;
     private final VBox bottomBox;
-    //还没开始或者已结束的任务
+    //非活动状态的任务
     private final TableView<FileTaskBO> topTaskTable;
-    //活动的任务
+    //活动状态的任务
     private final TableView<FileTaskBO> bottomTaskTable;
     private final BorderPane borderPane;
     private final FileTaskManager fileTaskManager;
