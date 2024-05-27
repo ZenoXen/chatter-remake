@@ -7,6 +7,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.model.bo.NodeBO;
 import org.zh.chatter.model.bo.NodeUserBO;
+import org.zh.chatter.network.TcpClient;
+import org.zh.chatter.network.TcpServer;
 import org.zh.chatter.network.UdpServer;
 
 import java.net.InetAddress;
@@ -22,6 +24,10 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private UdpServer udpServer;
+    @Resource
+    private TcpServer tcpServer;
+    @Resource
+    private TcpClient tcpClient;
     private final AtomicBoolean isDisconnected = new AtomicBoolean(false);
 
     @Override
@@ -35,14 +41,20 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
         new Thread(udpServer).start();
         //发送一次心跳信息
         udpServer.sendHeartbeat();
+        //启动tcp服务
+        new Thread(tcpServer).start();
     }
 
     @Override
     public void destroy() throws Exception {
         //发送一次离线通知
         udpServer.sendOfflineNotification();
-        //停止监听
+        //停止udp服务
         udpServer.stopListening();
+        //停止tcp服务
+        tcpServer.stopListening();
+        //关闭tcp客户端
+        tcpClient.shutdown();
     }
 
     public boolean isDisconnected() {
