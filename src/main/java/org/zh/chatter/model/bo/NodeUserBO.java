@@ -23,7 +23,7 @@ public class NodeUserBO {
      */
     public static NodeUserBO generateOne() {
         NodeUserBO nodeUserBO = new NodeUserBO();
-        nodeUserBO.setId(UUID.randomUUID().toString());
+        nodeUserBO.setId(UUID.fastUUID().toString(true));
         String username = generateRandomUsername();
         nodeUserBO.setUsername(username);
         nodeUserBO.setJoinTime(LocalDateTime.now());
