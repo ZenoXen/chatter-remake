@@ -53,8 +53,10 @@ public class UdpServer implements Runnable {
                     @Override
                     protected void initChannel(NioDatagramChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
+                        //inbound
                         pipeline.addLast(udpCommonDataDecoder);
                         pipeline.addLast(udpCommonChannelInboundHandler);
+                        //outbound
                         pipeline.addLast(udpCommonDataEncoder);
                     }
                 });

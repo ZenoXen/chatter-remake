@@ -7,3 +7,4 @@ app:
     multicast: 239.255.49.1
   port:
     udp: 7749
+    tcp: 7748
