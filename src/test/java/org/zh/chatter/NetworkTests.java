@@ -22,7 +22,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
 import org.testfx.framework.junit5.Start;
-import org.zh.chatter.enums.CommonDataTypeEnum;
+import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NetworkInterfaceHolder;
 import org.zh.chatter.model.bo.ChatMessageBO;
@@ -95,7 +95,7 @@ public class NetworkTests {
         MulticastAddressBO addressBO = networkInterfaceHolder.getSelectedLocalAddress();
         InetSocketAddress multicastAddress = networkInterfaceHolder.getMulticastAddress();
         assert addressBO != null;
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, multicastAddress.getAddress(), port, content);
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, multicastAddress.getAddress(), port, content);
         DatagramPacket packet = new DatagramPacket(Unpooled.copiedBuffer(objectMapper.writeValueAsString(udpCommonDataDTO).getBytes(StandardCharsets.UTF_8)), new InetSocketAddress(udpCommonDataDTO.getToAddress(), udpCommonDataDTO.getPort()), new InetSocketAddress(InetAddress.getByName(SENDER_ADDRESS), 7749));
         embeddedChannel.writeInbound(packet);
         //界面上是否有聊天记录

@@ -8,23 +8,23 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Getter
-public enum CommonDataTypeEnum {
+public enum UdpCommonDataTypeEnum {
     HEARTBEAT(1),
     CHAT_MESSAGE(2),
     OFFLINE_NOTIFICATION(3);
     private final int code;
 
-    private static final Map<Integer, CommonDataTypeEnum> CODE_MAP;
+    private static final Map<Integer, UdpCommonDataTypeEnum> CODE_MAP;
 
     static {
-        CODE_MAP = Arrays.stream(CommonDataTypeEnum.values()).collect(Collectors.toMap(CommonDataTypeEnum::getCode, Function.identity()));
+        CODE_MAP = Arrays.stream(UdpCommonDataTypeEnum.values()).collect(Collectors.toMap(UdpCommonDataTypeEnum::getCode, Function.identity()));
     }
 
-    CommonDataTypeEnum(int code) {
+    UdpCommonDataTypeEnum(int code) {
         this.code = code;
     }
 
-    public static CommonDataTypeEnum getByCode(int code) {
+    public static UdpCommonDataTypeEnum getByCode(int code) {
         return CODE_MAP.get(code);
     }
 }

@@ -8,7 +8,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.enums.CommonDataTypeEnum;
+import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.enums.NotificationTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.NodeManager;
@@ -39,7 +39,7 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws Exception {
-        CommonDataTypeEnum typeEnum = CommonDataTypeEnum.getByCode(udpCommonDataDTO.getType());
+        UdpCommonDataTypeEnum typeEnum = UdpCommonDataTypeEnum.getByCode(udpCommonDataDTO.getType());
         switch (typeEnum) {
             case HEARTBEAT -> this.handleHeartbeat(ctx, udpCommonDataDTO);
             case CHAT_MESSAGE -> this.handleChatMessage(ctx, udpCommonDataDTO);

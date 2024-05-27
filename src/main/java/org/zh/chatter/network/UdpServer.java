@@ -11,7 +11,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.enums.CommonDataTypeEnum;
+import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NetworkInterfaceHolder;
 import org.zh.chatter.model.bo.ChatMessageBO;
@@ -89,7 +89,7 @@ public class UdpServer implements Runnable {
     public void sendHeartbeat() throws Exception {
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.HEARTBEAT.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.HEARTBEAT.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
         channel.writeAndFlush(udpCommonDataDTO);
         log.info("发送心跳信息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
@@ -97,7 +97,7 @@ public class UdpServer implements Runnable {
     public void sendOfflineNotification() throws Exception {
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.OFFLINE_NOTIFICATION.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.OFFLINE_NOTIFICATION.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
         channel.writeAndFlush(udpCommonDataDTO);
         log.info("发送离线通知： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
@@ -106,7 +106,7 @@ public class UdpServer implements Runnable {
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
         ChatMessageBO chatMessageBO = new ChatMessageBO(currentUser, message, LocalDateTime.now());
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(CommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, address, port, objectMapper.writeValueAsString(chatMessageBO));
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, address, port, objectMapper.writeValueAsString(chatMessageBO));
         channel.writeAndFlush(udpCommonDataDTO);
         log.info("发送聊天消息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
