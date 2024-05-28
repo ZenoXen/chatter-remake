@@ -27,7 +27,6 @@ public class TcpServer implements Runnable {
 
     public TcpServer(@Value("${app.port.tcp}") Integer port,
                      LengthFieldBasedFrameDecoder lengthFieldBasedFrameDecoder,
-                     TcpCommonDataDecoder tcpCommonDataDecoder,
                      TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
                      TcpCommonDataEncoder tcpCommonDataEncoder) throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup(BOSS_GROUP_THREAD_NUM),
@@ -36,13 +35,13 @@ public class TcpServer implements Runnable {
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, SO_BACKLOG_VALUE)
-                .handler(new ChannelInitializer<NioDatagramChannel>() {
+                .childHandler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
                     protected void initChannel(NioDatagramChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
                         pipeline.addLast(lengthFieldBasedFrameDecoder);
-                        pipeline.addLast(tcpCommonDataDecoder);
+                        pipeline.addLast(new TcpCommonDataDecoder());
                         pipeline.addLast(tcpCommonChannelInboundHandler);
                         //outbound
                         pipeline.addLast(tcpCommonDataEncoder);

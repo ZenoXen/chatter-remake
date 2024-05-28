@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Getter
-public enum TcpCommonDataMessageTypeEnum {
+public enum TcpCmdTypeEnum {
     /**
      * 文件传输请求
      */
@@ -36,22 +36,22 @@ public enum TcpCommonDataMessageTypeEnum {
     private final Class<? extends Serializable> payloadClass;
     private final Class<? extends TcpCommonCmdHandler> handlerClass;
 
-    TcpCommonDataMessageTypeEnum(byte code, Class<? extends Serializable> payloadClass, Class<? extends TcpCommonCmdHandler> handlerClass) {
+    TcpCmdTypeEnum(byte code, Class<? extends Serializable> payloadClass, Class<? extends TcpCommonCmdHandler> handlerClass) {
         this.code = code;
         this.payloadClass = payloadClass;
         this.handlerClass = handlerClass;
     }
 
-    private static final Map<Byte, TcpCommonDataMessageTypeEnum> MAP;
+    private static final Map<Byte, TcpCmdTypeEnum> MAP;
 
     static {
         MAP = new HashMap<>();
-        for (TcpCommonDataMessageTypeEnum type : TcpCommonDataMessageTypeEnum.values()) {
+        for (TcpCmdTypeEnum type : TcpCmdTypeEnum.values()) {
             MAP.put(type.getCode(), type);
         }
     }
 
-    public static TcpCommonDataMessageTypeEnum getByCode(byte code) {
+    public static TcpCmdTypeEnum getByCode(byte code) {
         return MAP.get(code);
     }
 }

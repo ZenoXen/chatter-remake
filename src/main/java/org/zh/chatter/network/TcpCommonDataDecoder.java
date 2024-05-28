@@ -1,19 +1,15 @@
 package org.zh.chatter.network;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-@Component
 @Slf4j
-@ChannelHandler.Sharable
 public class TcpCommonDataDecoder extends ByteToMessageDecoder {
 
     private static final int SESSION_ID_LENGTH = 32;

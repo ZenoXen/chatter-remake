@@ -10,8 +10,8 @@ import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.model.bo.FileTaskBO;
+import org.zh.chatter.model.vo.FileTaskCellVO;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,49 +21,56 @@ public class FileTaskManager {
     private static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(FileTaskStatusEnum.TRANSFERRING, FileTaskStatusEnum.SUSPENDED);
     private Map<String, FileTaskBO> map;
     @Getter
-    private ObservableList<FileTaskBO> inactiveTasks;
+    private ObservableList<FileTaskCellVO> inactiveTasks;
     @Getter
-    private ObservableList<FileTaskBO> ongoingTasks;
+    private ObservableList<FileTaskCellVO> ongoingTasks;
 
     public FileTaskManager() {
         this.map = new LinkedHashMap<>();
         this.inactiveTasks = FXCollections.observableArrayList();
         this.ongoingTasks = FXCollections.observableArrayList();
-        //todo 去除测试数据
-        this.addOrUpdateTask(FileTaskBO.builder().fileName(new SimpleStringProperty("123")).fileSize(new SimpleLongProperty(1000)).senderName(new SimpleStringProperty("123")).senderId(new SimpleStringProperty("123")).transferredSize(new SimpleLongProperty(500)).transferProgress(new SimpleDoubleProperty(0.5)).sendTime(new SimpleObjectProperty<>(LocalDateTime.now())).status(new SimpleObjectProperty<>(FileTaskStatusEnum.PENDING)).taskId(new SimpleStringProperty("123")).build());
-        this.addOrUpdateTask(FileTaskBO.builder().fileName(new SimpleStringProperty("123")).fileSize(new SimpleLongProperty(1000)).senderName(new SimpleStringProperty("123")).senderId(new SimpleStringProperty("123")).transferredSize(new SimpleLongProperty(500)).transferProgress(new SimpleDoubleProperty(0.5)).sendTime(new SimpleObjectProperty<>(LocalDateTime.now())).status(new SimpleObjectProperty<>(FileTaskStatusEnum.TRANSFERRING)).taskId(new SimpleStringProperty("123")).build());
     }
 
-    public void addOrUpdateTask(FileTaskBO taskBO) {
-        String taskId = taskBO.getTaskId().get();
-        map.put(taskId, taskBO);
-        this.handleFileTaskStatus(taskBO);
+    public void addOrUpdateTask(FileTaskBO fileTaskBO) {
+        String taskId = fileTaskBO.getTaskId();
+        map.put(taskId, fileTaskBO);
+        FileTaskCellVO cellVO = this.convertFileTaskBO(fileTaskBO);
+        this.handleFileTaskStatus(cellVO);
     }
 
-    private void handleFileTaskStatus(FileTaskBO taskBO) {
-        Boolean isOngoingNow = ON_GOING_STATUSES.contains(taskBO.getStatus().get());
-        this.removeTaskFromList(taskBO);
-        this.addTaskToList(taskBO, isOngoingNow);
+    private FileTaskCellVO convertFileTaskBO(FileTaskBO fileTaskBO) {
+        return FileTaskCellVO.builder()
+                .fileName(new SimpleStringProperty(fileTaskBO.getFileName()))
+                .fileSize(new SimpleLongProperty(fileTaskBO.getFileSize()))
+                .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
+                .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
+                .sendTime(new SimpleObjectProperty<>(fileTaskBO.getSendTime()))
+                .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
+                .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
+                .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))
+                .taskId(new SimpleStringProperty(fileTaskBO.getTaskId())).build();
     }
 
-    private void removeTaskFromList(FileTaskBO taskBO) {
-        inactiveTasks.remove(taskBO);
-        ongoingTasks.remove(taskBO);
+    private void handleFileTaskStatus(FileTaskCellVO taskVO) {
+        Boolean isOngoingNow = ON_GOING_STATUSES.contains(taskVO.getStatus().get());
+        this.removeTaskFromList(taskVO);
+        this.addTaskToList(taskVO, isOngoingNow);
     }
 
-    private void addTaskToList(FileTaskBO taskBO, Boolean isOngoingNow) {
+    private void removeTaskFromList(FileTaskCellVO taskVO) {
+        inactiveTasks.remove(taskVO);
+        ongoingTasks.remove(taskVO);
+    }
+
+    private void addTaskToList(FileTaskCellVO taskVO, Boolean isOngoingNow) {
         if (isOngoingNow) {
-            ongoingTasks.add(taskBO);
+            ongoingTasks.add(taskVO);
         } else {
-            inactiveTasks.add(taskBO);
+            inactiveTasks.add(taskVO);
         }
     }
 
     public FileTaskBO getTask(String taskId) {
         return map.get(taskId);
-    }
-
-    public void removeAllTask() {
-        map.clear();
     }
 }

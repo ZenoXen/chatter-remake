@@ -17,6 +17,7 @@ import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
+import org.zh.chatter.network.TcpClient;
 import org.zh.chatter.network.UdpServer;
 
 import java.net.URL;
@@ -43,6 +44,8 @@ public class ChatAreaController implements Initializable {
     private ChatMessageManager chatMessageManager;
     @Resource
     private FileTaskManager fileTaskManager;
+    @Resource
+    private TcpClient tcpClient;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -77,7 +80,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        UserListDialog dialog = new UserListDialog(nodeManager.getUserList());
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), tcpClient);
         dialog.show();
     }
 

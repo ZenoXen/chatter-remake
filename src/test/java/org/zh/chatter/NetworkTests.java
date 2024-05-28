@@ -108,7 +108,7 @@ public class NetworkTests {
         //用户列表是否有该用户
         robot.clickOn("#userListButton");
         TableView tableView = robot.lookup(".table-view").queryAs(TableView.class);
-        boolean hasUser = tableView.getItems().contains(new UserVO(messageUser.getId(), messageUser.getUsername(), false));
+        boolean hasUser = tableView.getItems().contains(new UserVO(messageUser.getId(), messageUser.getUsername(), InetAddress.getLocalHost(), false));
         Assertions.assertTrue(hasUser);
     }
 }

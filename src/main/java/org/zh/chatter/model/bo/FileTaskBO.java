@@ -1,9 +1,6 @@
 package org.zh.chatter.model.bo;
 
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,13 +14,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileTaskBO {
-    private SimpleStringProperty taskId;
-    private SimpleStringProperty fileName;
-    private SimpleLongProperty fileSize;
-    private SimpleLongProperty transferredSize;
-    private SimpleDoubleProperty transferProgress;
-    private SimpleStringProperty senderId;
-    private SimpleStringProperty senderName;
-    private SimpleObjectProperty<LocalDateTime> sendTime;
-    private SimpleObjectProperty<FileTaskStatusEnum> status;
+    private String taskId;
+    private String fileName;
+    private Long fileSize;
+    private Long transferredSize;
+    private Double transferProgress;
+    private String senderId;
+    private String senderName;
+    private LocalDateTime sendTime;
+    private FileTaskStatusEnum status;
+    private NioSocketChannel channel;
 }
