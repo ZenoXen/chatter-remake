@@ -1,6 +1,7 @@
 package org.zh.chatter.component;
 
 import cn.hutool.core.collection.CollectionUtil;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
@@ -65,6 +66,9 @@ public class FileTransferDialog extends Dialog<Void> {
         TableView<FileTaskCellVO> fileTaskTable = new TableView<>();
         fileTaskTable.setItems(tasks);
         fileTaskTable.setPlaceholder(new Label(TOP_TABLE_PLACEHOLDER));
+        TableColumn<FileTaskCellVO, String> isMySelfColumn = new TableColumn<>("我发送的？");
+        isMySelfColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getIsMySelf() ? "是" : ""));
+
         TableColumn<FileTaskCellVO, String> idCol = new TableColumn<>("任务ID");
         idCol.setCellValueFactory(cellData -> cellData.getValue().getTaskId());
 

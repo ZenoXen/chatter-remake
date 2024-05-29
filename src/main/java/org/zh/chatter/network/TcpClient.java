@@ -21,6 +21,7 @@ import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferRequestBO;
+import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.UserVO;
 
@@ -96,13 +97,14 @@ public class TcpClient {
         if (Strings.isEmpty(fileName) || fileSize <= 0) {
             return;
         }
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(taskId).fileName(fileName)
-                .fileSize(fileSize).senderId(userVO.getId()).senderName(userVO.getUsername()).sendTime(LocalDateTime.now())
-                .status(FileTaskStatusEnum.PENDING).transferProgress(0D).transferredSize(0L).channel(channel).build();
+                .fileSize(fileSize).senderId(currentUser.getId()).senderName(currentUser.getUsername()).sendTime(LocalDateTime.now())
+                .status(FileTaskStatusEnum.PENDING).transferProgress(0D).transferredSize(0L).channel(channel).isMySelf(true).build();
         fileTaskManager.addOrUpdateTask(fileTaskBO);
         FileTransferRequestBO requestBO = new FileTransferRequestBO();
         requestBO.setFileSize(fileSize);
         requestBO.setFilename(fileName);
-        channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUserInfoHolder.getCurrentUser().getId(), requestBO));
+        channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO));
     }
 }

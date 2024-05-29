@@ -24,4 +24,5 @@ public class FileTaskBO {
     private LocalDateTime sendTime;
     private FileTaskStatusEnum status;
     private NioSocketChannel channel;
+    private Boolean isMySelf;
 }
