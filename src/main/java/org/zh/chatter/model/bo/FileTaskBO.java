@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 
+import java.io.File;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,6 +20,7 @@ public class FileTaskBO {
     private Long fileSize;
     private Long transferredSize;
     private Double transferProgress;
+    private File savePath;
     private String senderId;
     private String senderName;
     private LocalDateTime sendTime;
