@@ -1,7 +1,6 @@
 package org.zh.chatter.network;
 
 import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.lang.UUID;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -24,10 +23,10 @@ import org.zh.chatter.model.bo.FileTransferRequestBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.UserVO;
+import org.zh.chatter.util.IdUtil;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.time.LocalDateTime;
 
 @Component
 @Slf4j
@@ -49,7 +48,7 @@ public class TcpClient {
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new ChannelInitializer<NioDatagramChannel>() {
             @Override
-            protected void initChannel(NioDatagramChannel ch) throws Exception {
+            protected void initChannel(NioDatagramChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
                 //inbound
                 pipeline.addLast(lengthFieldBasedFrameDecoder);
@@ -85,21 +84,21 @@ public class TcpClient {
         if (userVO.getIsMySelf()) {
             return;
         }
+        //文件是目录，或者不存在，跳过
         if (!FileUtil.exist(file) || FileUtil.isDirectory(file)) {
             return;
         }
-        //保存channel，发送文件传输请求
+        //保存channel（用于传输完成后关闭），发送文件传输请求
         NioSocketChannel channel = this.connectHost(userVO.getAddress());
-        String taskId = UUID.fastUUID().toString(true);
-
+        String taskId = IdUtil.genId();
         String fileName = file.getName();
         long fileSize = file.length();
         if (Strings.isEmpty(fileName) || fileSize <= 0) {
             return;
         }
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
-        FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(taskId).fileName(fileName)
-                .fileSize(fileSize).senderId(currentUser.getId()).senderName(currentUser.getUsername()).sendTime(LocalDateTime.now())
+        FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(taskId).fileName(fileName).sourceFilePath(file)
+                .fileSize(fileSize).senderId(currentUser.getId()).senderName(currentUser.getUsername()).sendTime(System.currentTimeMillis())
                 .status(FileTaskStatusEnum.PENDING).transferProgress(0D).transferredSize(0L).channel(channel).isMySelf(true).build();
         fileTaskManager.addOrUpdateTask(fileTaskBO);
         FileTransferRequestBO requestBO = new FileTransferRequestBO();

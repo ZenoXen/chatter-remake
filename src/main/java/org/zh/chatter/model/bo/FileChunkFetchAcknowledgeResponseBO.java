@@ -7,6 +7,6 @@ import java.io.Serializable;
 @Data
 public class FileChunkFetchAcknowledgeResponseBO implements Serializable {
     private int chunkNo;
-    private short chunkSize;
+    private long chunkSize;
     private long receivedFileSize;
 }

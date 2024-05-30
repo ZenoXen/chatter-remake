@@ -15,13 +15,13 @@ import java.nio.charset.StandardCharsets;
 @ChannelHandler.Sharable
 public class TcpCommonDataEncoder extends MessageToByteEncoder<TcpCommonDataDTO> {
     @Override
-    protected void encode(ChannelHandlerContext ctx, TcpCommonDataDTO msg, ByteBuf out) throws Exception {
+    protected void encode(ChannelHandlerContext ctx, TcpCommonDataDTO msg, ByteBuf out) {
         out.writeByte(msg.getProtocolVersion());
         out.writeByte(msg.getMessageType());
         out.writeCharSequence(msg.getSessionId(), StandardCharsets.UTF_8);
         out.writeCharSequence(msg.getUserId(), StandardCharsets.UTF_8);
         out.writeLong(msg.getTimestamp());
-        out.writeShort(msg.getPayloadLength());
+        out.writeLong(msg.getPayloadLength());
         out.writeBytes(msg.getPayload());
     }
 }

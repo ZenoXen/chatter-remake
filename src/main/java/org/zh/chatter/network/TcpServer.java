@@ -37,7 +37,7 @@ public class TcpServer implements Runnable {
                 .option(ChannelOption.SO_BACKLOG, SO_BACKLOG_VALUE)
                 .childHandler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
-                    protected void initChannel(NioDatagramChannel ch) throws Exception {
+                    protected void initChannel(NioDatagramChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
                         pipeline.addLast(lengthFieldBasedFrameDecoder);

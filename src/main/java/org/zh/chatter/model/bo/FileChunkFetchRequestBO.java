@@ -6,6 +6,5 @@ import java.io.Serializable;
 
 @Data
 public class FileChunkFetchRequestBO implements Serializable {
-    private int chunkNo;
-    private short chunkSize;
+    private long timestamp;
 }

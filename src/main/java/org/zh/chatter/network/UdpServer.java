@@ -51,7 +51,7 @@ public class UdpServer implements Runnable {
                 .option(ChannelOption.SO_REUSEADDR, true)
                 .handler(new ChannelInitializer<NioDatagramChannel>() {
                     @Override
-                    protected void initChannel(NioDatagramChannel ch) throws Exception {
+                    protected void initChannel(NioDatagramChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
                         pipeline.addLast(udpCommonDataDecoder);

@@ -18,7 +18,7 @@ public class TcpCommonDataDecoder extends ByteToMessageDecoder {
 
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
         if (in.readableBytes() < MINIMUM_PAYLOAD_LENGTH) {
             log.warn("接收到的tcp包小于协议最小包大小，跳过");
             return;
@@ -29,12 +29,12 @@ public class TcpCommonDataDecoder extends ByteToMessageDecoder {
         tcpCommonDataDTO.setSessionId(in.readBytes(SESSION_ID_LENGTH).toString(StandardCharsets.UTF_8));
         tcpCommonDataDTO.setUserId(in.readBytes(USER_ID_LENGTH).toString(StandardCharsets.UTF_8));
         tcpCommonDataDTO.setTimestamp(in.readLong());
-        short payloadLength = in.readShort();
+        long payloadLength = in.readLong();
         if (payloadLength <= 0) {
             payloadLength = 0;
         }
         tcpCommonDataDTO.setPayloadLength(payloadLength);
-        byte[] payload = new byte[payloadLength];
+        byte[] payload = new byte[(int) payloadLength];
         in.readBytes(payload);
         tcpCommonDataDTO.setPayload(payload);
         out.add(tcpCommonDataDTO);

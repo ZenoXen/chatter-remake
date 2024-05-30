@@ -51,7 +51,6 @@ public class NetworkTests {
     private static final String CSS_PATH = "css/styles.css";
     private static final String WINDOW_TITLE = "局域网聊天室";
 
-    private Stage stage;
     @Autowired
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Autowired
@@ -77,7 +76,6 @@ public class NetworkTests {
         stage.setTitle(WINDOW_TITLE);
         stage.setScene(scene);
         stage.show();
-        this.stage = stage;
     }
 
     @Test

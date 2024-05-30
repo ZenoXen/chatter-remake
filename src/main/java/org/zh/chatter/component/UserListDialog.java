@@ -20,7 +20,6 @@ public class UserListDialog extends Dialog<Void> {
     private static final String CLOSE_BUTTON_TEXT = "关闭";
     private static final String SEND_FILE_BUTTON_COLUMN_NAME = "操作";
     private static final String SEND_FILE_BUTTON_TEXT = "发送文件";
-    private final TableView<UserVO> tableView;
     private static final String DIALOG_TITLE = "用户列表";
     private static final String SELECT_FILE_TITLE = "选择要发送的文件";
     private static final int WIDTH = 300;
@@ -30,7 +29,7 @@ public class UserListDialog extends Dialog<Void> {
 
     public UserListDialog(List<UserVO> users, TcpClient tcpClient) {
         this.setTitle(DIALOG_TITLE);
-        this.tableView = new TableView<>();
+        TableView<UserVO> tableView = new TableView<>();
         TableColumn<UserVO, String> idColumn = new TableColumn<>(ID_COLUMN_NAME);
         TableColumn<UserVO, String> nameColumn = new TableColumn<>(USERNAME_COLUMN_NAME);
         TableColumn<UserVO, Void> sendFileColumn = new TableColumn<>(SEND_FILE_BUTTON_COLUMN_NAME);

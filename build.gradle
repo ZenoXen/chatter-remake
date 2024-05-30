@@ -78,5 +78,5 @@ configurations
         }
 
 def getPlatform() {
-    return JavaFXPlatform.detect(osdetector);
+    return JavaFXPlatform.detect(osdetector)
 }

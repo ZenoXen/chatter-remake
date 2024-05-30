@@ -28,35 +28,25 @@ public class FileTransferDialog extends Dialog<Void> {
     public static final double TOP_BOX_HEIGHT_RATIO = 0.35;
     public static final double BOTTOM_BOX_HEIGHT_RATIO = 0.65;
 
-    private final int width;
     private final int height;
-    private final VBox topBox;
-    private final VBox bottomBox;
-    //非活动状态的任务
-    private final TableView<FileTaskCellVO> topTaskTable;
-    //活动状态的任务
-    private final TableView<FileTaskCellVO> bottomTaskTable;
-    private final BorderPane borderPane;
     private final FileTaskManager fileTaskManager;
 
     public FileTransferDialog(int width,
                               int height,
                               FileTaskManager fileTaskManager) {
         this.setTitle(DIALOG_TITLE);
-        this.width = width;
         this.height = height;
         this.fileTaskManager = fileTaskManager;
         TableView<FileTaskCellVO> topTaskTable = this.generateTopTaskTable(fileTaskManager.getInactiveTasks());
         TableView<FileTaskCellVO> bottomTaskTable = this.generateBottomTaskTable(fileTaskManager.getOngoingTasks());
-        this.topTaskTable = topTaskTable;
-        this.bottomTaskTable = bottomTaskTable;
-        this.topBox = this.generateTopVbox(topTaskTable);
-        this.bottomBox = this.generateBottomVbox(bottomTaskTable);
+        //非活动状态的任务
+        //活动状态的任务
+        VBox topBox = this.generateTopVbox(topTaskTable);
+        VBox bottomBox = this.generateBottomVbox(bottomTaskTable);
 
         BorderPane borderPane = new BorderPane();
-        borderPane.setTop(this.topBox);
-        borderPane.setCenter(this.bottomBox);
-        this.borderPane = borderPane;
+        borderPane.setTop(topBox);
+        borderPane.setCenter(bottomBox);
 
         this.getDialogPane().setContent(borderPane);
         this.getDialogPane().getButtonTypes().add(new ButtonType(CLOSE_BUTTON_TEXT, ButtonBar.ButtonData.CANCEL_CLOSE));

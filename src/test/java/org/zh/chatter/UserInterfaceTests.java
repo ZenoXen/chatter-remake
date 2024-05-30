@@ -31,6 +31,8 @@ import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.UserVO;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.TimeUnit;
 
 @ExtendWith(ApplicationExtension.class)
@@ -65,7 +67,7 @@ public class UserInterfaceTests {
     }
 
     @Test
-    public void shouldExitApp(FxRobot robot) throws InterruptedException {
+    public void shouldExitApp(FxRobot robot) {
         MenuBar bar = robot.lookup("#topMenuBar").query();
         MenuItem menuItem = bar.getMenus().get(0).getItems().get(1);
         robot.interactNoWait(menuItem::fire);
@@ -108,12 +110,12 @@ public class UserInterfaceTests {
     }
 
     @Test
-    public void testUserListDialog(FxRobot robot) {
+    public void testUserListDialog(FxRobot robot) throws UnknownHostException {
         robot.clickOn("#userListButton");
         FxAssert.verifyThat(".table-view", TableViewMatchers.hasNumRows(1));
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         TableView tableView = robot.lookup(".table-view").queryAs(TableView.class);
-        boolean hasUser = tableView.getItems().contains(new UserVO(currentUser.getId(), currentUser.getUsername(), true));
+        boolean hasUser = tableView.getItems().contains(new UserVO(currentUser.getId(), currentUser.getUsername(), InetAddress.getLocalHost(), true));
         Assertions.assertTrue(hasUser);
     }
 

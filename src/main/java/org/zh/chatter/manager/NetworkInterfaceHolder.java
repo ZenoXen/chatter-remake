@@ -18,7 +18,7 @@ public class NetworkInterfaceHolder {
     private final Collection<NetworkInterface> allNetworkInterfaces;
     private NetworkInterface selectedNetworkInterface;
     private MulticastAddressBO selectedLocalAddress;
-    private InetSocketAddress multicastAddress;
+    private final InetSocketAddress multicastAddress;
 
     public NetworkInterfaceHolder(@Value("${app.port.udp}") Integer port,
                                   @Value("${app.address.multicast}") String multicastAddress) throws SocketException {

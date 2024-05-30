@@ -20,13 +20,13 @@ public class TcpCommonDataDTO {
     private String sessionId;
     private String userId;
     private long timestamp;
-    private short payloadLength;
+    private long payloadLength;
     private byte[] payload;
 
     public static <T extends Serializable> TcpCommonDataDTO encapsulate(TcpCmdTypeEnum cmdType, String sessionId, String userId, T data) {
         byte[] serialized = ObjectUtil.serialize(data);
         return TcpCommonDataDTO.builder().messageType(cmdType.getCode()).protocolVersion(Constants.PROTOCOL_VERSION)
                 .sessionId(sessionId).userId(userId)
-                .timestamp(System.currentTimeMillis()).payload(serialized).payloadLength((short) serialized.length).build();
+                .timestamp(System.currentTimeMillis()).payload(serialized).payloadLength(serialized.length).build();
     }
 }

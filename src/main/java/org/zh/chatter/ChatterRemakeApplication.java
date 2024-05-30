@@ -14,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zh.chatter.exception.handler.GlobalExceptionHandler;
 import org.zh.chatter.manager.NotificationManager;
+import org.zh.chatter.manager.StageHolder;
 
 @SpringBootApplication
 @EnableScheduling
@@ -27,14 +28,17 @@ public class ChatterRemakeApplication extends Application {
     private static final String CSS_PATH = "css/styles.css";
     private static final String WINDOW_TITLE = "局域网聊天室";
 
+    private Stage stage;
+
     @Override
-    public void init() throws Exception {
+    public void init() {
         applicationContext = SpringApplication.run(ChatterRemakeApplication.class);
+        applicationContext.getBean(StageHolder.class).setStage(this.stage);
         globalExceptionHandler = new GlobalExceptionHandler(applicationContext.getBean(NotificationManager.class));
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         applicationContext.close();
     }
 
@@ -43,7 +47,7 @@ public class ChatterRemakeApplication extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         //未捕获的异常，使用全局异常处理
         Thread.setDefaultUncaughtExceptionHandler((t, e) -> Platform.runLater(() -> globalExceptionHandler.handleException(t, e)));
         try {
@@ -55,6 +59,7 @@ public class ChatterRemakeApplication extends Application {
             stage.setTitle(WINDOW_TITLE);
             stage.setScene(scene);
             stage.show();
+            this.stage = stage;
         } catch (Throwable t) {
             globalExceptionHandler.showErrorDialog(Thread.currentThread(), t);
         }

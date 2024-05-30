@@ -1,5 +1,6 @@
 package org.zh.chatter.manager;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -19,11 +20,11 @@ import java.util.Set;
 @Component
 public class FileTaskManager {
     private static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(FileTaskStatusEnum.TRANSFERRING, FileTaskStatusEnum.SUSPENDED);
-    private Map<String, FileTaskBO> map;
+    private final Map<String, FileTaskBO> map;
     @Getter
-    private ObservableList<FileTaskCellVO> inactiveTasks;
+    private final ObservableList<FileTaskCellVO> inactiveTasks;
     @Getter
-    private ObservableList<FileTaskCellVO> ongoingTasks;
+    private final ObservableList<FileTaskCellVO> ongoingTasks;
 
     public FileTaskManager() {
         this.map = new LinkedHashMap<>();
@@ -44,7 +45,7 @@ public class FileTaskManager {
                 .fileSize(new SimpleLongProperty(fileTaskBO.getFileSize()))
                 .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
                 .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
-                .sendTime(new SimpleObjectProperty<>(fileTaskBO.getSendTime()))
+                .sendTime(new SimpleObjectProperty<>(LocalDateTimeUtil.of(fileTaskBO.getSendTime())))
                 .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
                 .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
                 .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))
