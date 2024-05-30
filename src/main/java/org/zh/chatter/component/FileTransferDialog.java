@@ -14,6 +14,7 @@ import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.LockManager;
+import org.zh.chatter.model.bo.FileChunkFetchRequestBO;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
@@ -150,6 +151,11 @@ public class FileTransferDialog extends Dialog<Void> {
                             FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
                             fileTransferStatusChangedNotificationBO.setTargetStatus(oppositeStatus);
                             channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
+                            if (FileTaskStatusEnum.TRANSFERRING.equals(oppositeStatus)) {
+                                FileChunkFetchRequestBO fileChunkFetchRequestBO = new FileChunkFetchRequestBO();
+                                fileChunkFetchRequestBO.setTimestamp(System.currentTimeMillis());
+                                channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_CHUNK_FETCH_REQUEST, task.getTaskId(), currentUserInfoHolder.getCurrentUser().getId(), fileChunkFetchRequestBO));
+                            }
                             suspendButton.setText(getStatusButtonText(oppositeStatus));
                         }
                     });
