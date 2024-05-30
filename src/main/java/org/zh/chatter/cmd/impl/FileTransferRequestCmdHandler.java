@@ -12,10 +12,7 @@ import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
-import org.zh.chatter.manager.CurrentUserInfoHolder;
-import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.manager.NodeManager;
-import org.zh.chatter.manager.StageHolder;
+import org.zh.chatter.manager.*;
 import org.zh.chatter.model.bo.*;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 
@@ -36,53 +33,57 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
     private FileTaskManager fileTaskManager;
     @Resource
     private StageHolder stageHolder;
+    @Resource
+    private LockManager lockManager;
 
     @Override
-    public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) {
+    public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) throws Exception {
         FileTransferRequestBO fileTransferRequestBO = (FileTransferRequestBO) payload;
-        String filename = fileTransferRequestBO.getFilename();
-        long fileSize = fileTransferRequestBO.getFileSize();
-        String senderId = dataDTO.getUserId();
-        //文件名为空，或者文件大小异常，不处理请求
-        if (Strings.isEmpty(filename) || fileSize <= 0) {
-            return;
-        }
-        NodeBO node = nodeManager.getNodeByUserId(senderId);
-        //如果没有该用户的节点，不处理请求
-        if (node == null) {
-            return;
-        }
-        String senderName = node.getUser().getUsername();
-        Optional<ButtonType> result = this.showAcceptFileConfirmation(senderName, filename, fileSize);
-        boolean accept = result.filter(bt -> bt.equals(ButtonType.OK)).isPresent();
-        long currentTimeMillis = System.currentTimeMillis();
-        FileTransferAcknowledgeResponseBO responseBO = new FileTransferAcknowledgeResponseBO();
-        responseBO.setAcknowledgeTimestamp(currentTimeMillis);
-        //响应请求，并决定是否要保存文件任务
-        String sessionId = dataDTO.getSessionId();
-        boolean savePathSelected = false;
-        if (accept) {
-            //选择保存路径
-            File savePath = this.showSavePathFileChooser(filename);
-            if (savePath != null) {
-                savePathSelected = true;
-                FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
-                        .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
-                        .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel((NioSocketChannel) ctx.channel())
-                        .isMySelf(false).build();
-                fileTaskManager.addOrUpdateTask(fileTaskBO);
+        lockManager.runWithLock(dataDTO.getSessionId(), () -> {
+            String filename = fileTransferRequestBO.getFilename();
+            long fileSize = fileTransferRequestBO.getFileSize();
+            String senderId = dataDTO.getUserId();
+            //文件名为空，或者文件大小异常，不处理请求
+            if (Strings.isEmpty(filename) || fileSize <= 0) {
+                return;
             }
-        }
-        boolean fileAccepted = accept && savePathSelected;
-        responseBO.setAccept(fileAccepted);
-        String userId = currentUserInfoHolder.getCurrentUser().getId();
-        ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_ACKNOWLEDGE_RESPONSE, sessionId, userId, responseBO));
-        //请求第一个文件块
-        if (fileAccepted) {
-            this.sendFirstFileChunkRequest(ctx, sessionId, userId);
-        } else {
-            ctx.close();
-        }
+            NodeBO node = nodeManager.getNodeByUserId(senderId);
+            //如果没有该用户的节点，不处理请求
+            if (node == null) {
+                return;
+            }
+            String senderName = node.getUser().getUsername();
+            Optional<ButtonType> result = this.showAcceptFileConfirmation(senderName, filename, fileSize);
+            boolean accept = result.filter(bt -> bt.equals(ButtonType.OK)).isPresent();
+            long currentTimeMillis = System.currentTimeMillis();
+            FileTransferAcknowledgeResponseBO responseBO = new FileTransferAcknowledgeResponseBO();
+            responseBO.setAcknowledgeTimestamp(currentTimeMillis);
+            //响应请求，并决定是否要保存文件任务
+            String sessionId = dataDTO.getSessionId();
+            boolean savePathSelected = false;
+            if (accept) {
+                //选择保存路径
+                File savePath = this.showSavePathFileChooser(filename);
+                if (savePath != null) {
+                    savePathSelected = true;
+                    FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
+                            .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
+                            .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel((NioSocketChannel) ctx.channel())
+                            .isMySelf(false).build();
+                    fileTaskManager.addOrUpdateTask(fileTaskBO);
+                }
+            }
+            boolean fileAccepted = accept && savePathSelected;
+            responseBO.setAccept(fileAccepted);
+            String userId = currentUserInfoHolder.getCurrentUser().getId();
+            ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_ACKNOWLEDGE_RESPONSE, sessionId, userId, responseBO));
+            //请求第一个文件块
+            if (fileAccepted) {
+                this.sendFirstFileChunkRequest(ctx, sessionId, userId);
+            } else {
+                ctx.close();
+            }
+        });
     }
 
     private File showSavePathFileChooser(String filename) {

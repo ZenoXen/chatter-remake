@@ -13,6 +13,7 @@ import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
+import org.zh.chatter.manager.LockManager;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
@@ -37,16 +38,19 @@ public class FileTransferDialog extends Dialog<Void> {
     private final int width;
     private final FileTaskManager fileTaskManager;
     private final CurrentUserInfoHolder currentUserInfoHolder;
+    private final LockManager lockManager;
 
     public FileTransferDialog(int width,
                               int height,
                               FileTaskManager fileTaskManager,
-                              CurrentUserInfoHolder currentUserInfoHolder) {
+                              CurrentUserInfoHolder currentUserInfoHolder,
+                              LockManager lockManager) {
         this.setTitle(DIALOG_TITLE);
         this.width = width;
         this.height = height;
         this.fileTaskManager = fileTaskManager;
         this.currentUserInfoHolder = currentUserInfoHolder;
+        this.lockManager = lockManager;
         TableView<FileTaskCellVO> topTaskTable = this.generateTopTaskTable(fileTaskManager.getInactiveTasks());
         TableView<FileTaskCellVO> bottomTaskTable = this.generateBottomTaskTable(fileTaskManager.getOngoingTasks());
         //非活动状态的任务
@@ -135,16 +139,20 @@ public class FileTransferDialog extends Dialog<Void> {
                 suspendButton.setOnAction(event -> {
                     FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
                     String taskId = cellVO.getTaskId().get();
-                    FileTaskBO task = fileTaskManager.getTask(taskId);
-                    if (task != null && FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {
-                        task.setStatus(FileTaskStatusEnum.SUSPENDED);
-                        fileTaskManager.addOrUpdateTask(task);
-                        NioSocketChannel channel = task.getChannel();
-                        String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
-                        FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
-                        fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.SUSPENDED);
-                        channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
-                    }
+                    lockManager.runWithLock(taskId, () -> {
+                        FileTaskBO task = fileTaskManager.getTask(taskId);
+                        if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
+                            FileTaskStatusEnum oppositeStatus = getOppositeStatus(task.getStatus());
+                            task.setStatus(oppositeStatus);
+                            fileTaskManager.addOrUpdateTask(task);
+                            NioSocketChannel channel = task.getChannel();
+                            String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
+                            FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
+                            fileTransferStatusChangedNotificationBO.setTargetStatus(oppositeStatus);
+                            channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
+                            suspendButton.setText(getStatusButtonText(oppositeStatus));
+                        }
+                    });
                 });
             }
 
@@ -167,17 +175,19 @@ public class FileTransferDialog extends Dialog<Void> {
                 cancellButton.setOnAction(event -> {
                     FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
                     String taskId = cellVO.getTaskId().get();
-                    FileTaskBO task = fileTaskManager.getTask(taskId);
-                    if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
-                        task.setStatus(FileTaskStatusEnum.CANCELLED);
-                        fileTaskManager.addOrUpdateTask(task);
-                        NioSocketChannel channel = task.getChannel();
-                        String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
-                        FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
-                        fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.CANCELLED);
-                        channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
-                        channel.close();
-                    }
+                    lockManager.runWithLock(taskId, () -> {
+                        FileTaskBO task = fileTaskManager.getTask(taskId);
+                        if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
+                            task.setStatus(FileTaskStatusEnum.CANCELLED);
+                            fileTaskManager.addOrUpdateTask(task);
+                            NioSocketChannel channel = task.getChannel();
+                            String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
+                            FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
+                            fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.CANCELLED);
+                            channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
+                            channel.close();
+                        }
+                    });
                 });
             }
 
@@ -195,6 +205,14 @@ public class FileTransferDialog extends Dialog<Void> {
         ObservableList<TableColumn<FileTaskCellVO, ?>> columns = fileTaskTable.getColumns();
         columns.addAll(CollectionUtil.newArrayList(idColOngoing, fileNameColOngoing, senderColOngoing, sendTimeColOngoing, fileSizeColOngoing, statusColOngoing, progressCol, cancellCol));
         return fileTaskTable;
+    }
+
+    private FileTaskStatusEnum getOppositeStatus(FileTaskStatusEnum status) {
+        return FileTaskStatusEnum.TRANSFERRING.equals(status) ? FileTaskStatusEnum.SUSPENDED : FileTaskStatusEnum.TRANSFERRING;
+    }
+
+    private String getStatusButtonText(FileTaskStatusEnum status) {
+        return FileTaskStatusEnum.TRANSFERRING.equals(status) ? "暂停" : "继续";
     }
 
     private VBox generateBottomVbox(TableView<FileTaskCellVO> fileTaskTable) {

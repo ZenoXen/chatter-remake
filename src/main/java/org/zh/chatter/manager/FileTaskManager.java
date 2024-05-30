@@ -30,7 +30,7 @@ public class FileTaskManager {
         this.ongoingTasks = FXCollections.observableArrayList();
     }
 
-    public synchronized void addOrUpdateTask(FileTaskBO fileTaskBO) {
+    public void addOrUpdateTask(FileTaskBO fileTaskBO) {
         String taskId = fileTaskBO.getTaskId();
         map.put(taskId, fileTaskBO);
         FileTaskCellVO cellVO = this.convertFileTaskBO(fileTaskBO);

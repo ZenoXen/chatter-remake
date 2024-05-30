@@ -11,10 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTransferDialog;
 import org.zh.chatter.component.UserListDialog;
-import org.zh.chatter.manager.ChatMessageManager;
-import org.zh.chatter.manager.CurrentUserInfoHolder;
-import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.manager.*;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.network.TcpClient;
@@ -46,6 +43,8 @@ public class ChatAreaController implements Initializable {
     private FileTaskManager fileTaskManager;
     @Resource
     private TcpClient tcpClient;
+    @Resource
+    private LockManager lockManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -85,7 +84,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager, currentUserInfoHolder);
+        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager, currentUserInfoHolder, lockManager);
         dialog.show();
     }
 }
