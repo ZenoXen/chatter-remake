@@ -30,7 +30,11 @@ public enum TcpCmdTypeEnum {
     /**
      * 文件块获取确认响应
      */
-    FILE_CHUNK_FETCH_ACKNOWLEDGE_RESPONSE((byte) 0x5, FileChunkFetchAcknowledgeResponseBO.class, FileChunkFetchAcknowledgeResponseCmdHandler.class);
+    FILE_CHUNK_FETCH_ACKNOWLEDGE_RESPONSE((byte) 0x5, FileChunkFetchAcknowledgeResponseBO.class, FileChunkFetchAcknowledgeResponseCmdHandler.class),
+    /**
+     * 文件传输状态变更通知
+     */
+    FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION((byte) 0x6, FileTransferStatusChangedNotificationBO.class, FileTransferStatusChangedNotificationCmdHandler.class);
 
     private final byte code;
     private final Class<? extends Serializable> payloadClass;

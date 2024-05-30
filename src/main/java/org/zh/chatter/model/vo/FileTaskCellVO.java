@@ -1,10 +1,10 @@
 package org.zh.chatter.model.vo;
 
-import javafx.beans.property.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleLongProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import lombok.*;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 
 import java.time.LocalDateTime;
@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class FileTaskCellVO {
     private Boolean isMySelf;
+    @EqualsAndHashCode.Include
     private SimpleStringProperty taskId;
     private SimpleStringProperty fileName;
     private SimpleLongProperty fileSize;

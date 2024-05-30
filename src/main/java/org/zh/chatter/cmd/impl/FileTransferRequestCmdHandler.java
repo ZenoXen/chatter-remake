@@ -68,7 +68,7 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
                 savePathSelected = true;
                 FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
                         .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
-                        .status(FileTaskStatusEnum.PENDING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel((NioSocketChannel) ctx.channel())
+                        .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel((NioSocketChannel) ctx.channel())
                         .isMySelf(false).build();
                 fileTaskManager.addOrUpdateTask(fileTaskBO);
             }

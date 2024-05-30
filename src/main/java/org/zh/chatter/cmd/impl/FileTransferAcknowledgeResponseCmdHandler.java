@@ -22,7 +22,8 @@ public class FileTransferAcknowledgeResponseCmdHandler implements TcpCommonCmdHa
     public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) {
         FileTransferAcknowledgeResponseBO fileTransferAcknowledgeResponseBO = (FileTransferAcknowledgeResponseBO) payload;
         FileTaskBO task = fileTaskManager.getTask(dataDTO.getSessionId());
-        if (task == null) {
+        //如果任务状态不是PENDING，不更新
+        if (task == null || !FileTaskStatusEnum.PENDING.equals(task.getStatus())) {
             return;
         }
         if (fileTransferAcknowledgeResponseBO.isAccept()) {

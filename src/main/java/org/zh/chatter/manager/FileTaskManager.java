@@ -15,11 +15,9 @@ import org.zh.chatter.model.vo.FileTaskCellVO;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 @Component
 public class FileTaskManager {
-    private static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(FileTaskStatusEnum.TRANSFERRING, FileTaskStatusEnum.SUSPENDED);
     private final Map<String, FileTaskBO> map;
     @Getter
     private final ObservableList<FileTaskCellVO> inactiveTasks;
@@ -32,7 +30,7 @@ public class FileTaskManager {
         this.ongoingTasks = FXCollections.observableArrayList();
     }
 
-    public void addOrUpdateTask(FileTaskBO fileTaskBO) {
+    public synchronized void addOrUpdateTask(FileTaskBO fileTaskBO) {
         String taskId = fileTaskBO.getTaskId();
         map.put(taskId, fileTaskBO);
         FileTaskCellVO cellVO = this.convertFileTaskBO(fileTaskBO);
@@ -53,7 +51,7 @@ public class FileTaskManager {
     }
 
     private void handleFileTaskStatus(FileTaskCellVO taskVO) {
-        Boolean isOngoingNow = ON_GOING_STATUSES.contains(taskVO.getStatus().get());
+        Boolean isOngoingNow = FileTaskStatusEnum.ON_GOING_STATUSES.contains(taskVO.getStatus().get());
         this.removeTaskFromList(taskVO);
         this.addTaskToList(taskVO, isOngoingNow);
     }

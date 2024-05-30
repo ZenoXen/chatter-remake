@@ -8,7 +8,6 @@ import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.model.bo.FileChunkFetchRequestBO;
 import org.zh.chatter.model.bo.FileChunkFetchResponseBO;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
@@ -29,7 +28,6 @@ public class FileChunkFetchRequestCmdHandler implements TcpCommonCmdHandler {
 
     @Override
     public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) throws Exception {
-        FileChunkFetchRequestBO fileChunkFetchRequestBO = (FileChunkFetchRequestBO) payload;
         //接收文件块的发送请求
         String sessionId = dataDTO.getSessionId();
         FileTaskBO task = fileTaskManager.getTask(sessionId);

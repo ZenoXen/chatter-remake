@@ -1,6 +1,7 @@
 package org.zh.chatter.cmd.impl;
 
 import io.netty.channel.ChannelHandlerContext;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.FileTaskStatusEnum;
@@ -13,11 +14,8 @@ import java.io.Serializable;
 
 @Component
 public class FileChunkFetchAcknowledgeResponseCmdHandler implements TcpCommonCmdHandler {
-    private final FileTaskManager fileTaskManager;
-
-    public FileChunkFetchAcknowledgeResponseCmdHandler(FileTaskManager fileTaskManager) {
-        this.fileTaskManager = fileTaskManager;
-    }
+    @Resource
+    private FileTaskManager fileTaskManager;
 
     @Override
     public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) {

@@ -67,10 +67,12 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
             task.setTransferProgress(transferredSize / (double) task.getFileSize());
             this.sendChunkAcknowledgeResponse(ctx, task, chunkSize);
         }
-        //如果文件数据全部传输完毕，更新任务状态完结，否则继续获取下一个文件块
+        //如果文件数据全部传输完毕，更新任务状态完结
         if (task.getTransferredSize() >= task.getFileSize()) {
             task.setStatus(FileTaskStatusEnum.COMPLETED);
-        } else {
+        }
+        //如果任务状态仍然处于传输中，就继续获取下一块文件
+        if (FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {
             task.setCurrentChunkNo(task.getCurrentChunkNo() + 1);
             this.requestChunk(ctx, task);
         }

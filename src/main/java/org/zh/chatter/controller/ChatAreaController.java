@@ -85,7 +85,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager);
+        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager, currentUserInfoHolder);
         dialog.show();
     }
 }

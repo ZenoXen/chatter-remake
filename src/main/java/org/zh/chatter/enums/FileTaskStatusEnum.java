@@ -2,6 +2,8 @@ package org.zh.chatter.enums;
 
 import lombok.Getter;
 
+import java.util.Set;
+
 @Getter
 public enum FileTaskStatusEnum {
     PENDING("待定"),
@@ -12,6 +14,9 @@ public enum FileTaskStatusEnum {
     CANCELLED("已取消"),
     COMPLETED("已完成");
     private final String displayName;
+
+    public static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(FileTaskStatusEnum.TRANSFERRING, FileTaskStatusEnum.SUSPENDED);
+    public static final Set<FileTaskStatusEnum> VALID_CHANGE_TARGET_STATUSES = Set.of(FileTaskStatusEnum.CANCELLED, FileTaskStatusEnum.SUSPENDED);
 
     FileTaskStatusEnum(String displayName) {
         this.displayName = displayName;

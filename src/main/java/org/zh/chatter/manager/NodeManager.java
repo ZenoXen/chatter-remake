@@ -28,7 +28,7 @@ public class NodeManager {
         return userIdNodeMap.get(userId);
     }
 
-    public boolean addNode(NodeBO node) {
+    public synchronized boolean addNode(NodeBO node) {
         InetAddress address = node.getAddress();
         String userId = node.getUser().getId();
         if (!this.isNodeOrUserExists(address, userId)) {
@@ -39,7 +39,7 @@ public class NodeManager {
         return false;
     }
 
-    public NodeBO removeNode(InetAddress address) {
+    public synchronized NodeBO removeNode(InetAddress address) {
         NodeBO removed = nodeMap.remove(address);
         userIdNodeMap.remove(removed.getUser().getId());
         return removed;
@@ -50,12 +50,13 @@ public class NodeManager {
     }
 
     public List<UserVO> getUserList() {
+        String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
         return nodeMap.values().stream().map(n -> {
             UserVO userVO = new UserVO();
             userVO.setId(n.getUser().getId());
             userVO.setUsername(n.getUser().getUsername());
             userVO.setAddress(n.getAddress());
-            userVO.setIsMySelf(n.getUser().getId().equals(currentUserInfoHolder.getCurrentUser().getId()));
+            userVO.setIsMySelf(n.getUser().getId().equals(currentUserId));
             return userVO;
         }).collect(Collectors.toList());
     }
