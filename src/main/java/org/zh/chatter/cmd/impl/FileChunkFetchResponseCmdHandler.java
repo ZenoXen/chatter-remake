@@ -10,10 +10,7 @@ import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.model.bo.FileChunkFetchAcknowledgeResponseBO;
-import org.zh.chatter.model.bo.FileChunkFetchRequestBO;
-import org.zh.chatter.model.bo.FileChunkFetchResponseBO;
-import org.zh.chatter.model.bo.FileTaskBO;
+import org.zh.chatter.model.bo.*;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 
 import java.io.RandomAccessFile;
@@ -56,6 +53,8 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
         if (needRetry) {
             if (task.getChunkRetryTimes() >= MAX_CHUNK_RETRY_TIMES) {
                 task.setStatus(FileTaskStatusEnum.FAILED);
+                this.sendTaskFiledNotification(ctx, sessionId);
+                ctx.close();
             } else {
                 task.setChunkRetryTimes(task.getChunkRetryTimes() + 1);
                 log.warn("文件 {} 块号 {} 校验和不一致，当前重试次数 {}", task.getFileName(), task.getCurrentChunkNo(), task.getChunkRetryTimes());
@@ -67,9 +66,10 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
             task.setTransferProgress(transferredSize / (double) task.getFileSize());
             this.sendChunkAcknowledgeResponse(ctx, task, chunkSize);
         }
-        //如果文件数据全部传输完毕，更新任务状态完结
+        //如果文件数据全部传输完毕，更新任务状态完结，关闭channel
         if (task.getTransferredSize() >= task.getFileSize()) {
             task.setStatus(FileTaskStatusEnum.COMPLETED);
+            ctx.close();
         }
         //如果任务状态仍然处于传输中，就继续获取下一块文件
         if (FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {
@@ -77,6 +77,13 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
             this.requestChunk(ctx, task);
         }
         fileTaskManager.addOrUpdateTask(task);
+    }
+
+    private void sendTaskFiledNotification(ChannelHandlerContext ctx, String sessionId) {
+        String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
+        FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
+        fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.SUSPENDED);
+        ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, sessionId, currentUserId, fileTransferStatusChangedNotificationBO));
     }
 
     private void requestChunk(ChannelHandlerContext ctx, FileTaskBO task) {

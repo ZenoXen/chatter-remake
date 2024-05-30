@@ -80,6 +80,8 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
         //请求第一个文件块
         if (fileAccepted) {
             this.sendFirstFileChunkRequest(ctx, sessionId, userId);
+        } else {
+            ctx.close();
         }
     }
 

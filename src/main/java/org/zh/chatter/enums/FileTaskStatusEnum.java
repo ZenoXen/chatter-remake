@@ -15,8 +15,8 @@ public enum FileTaskStatusEnum {
     COMPLETED("已完成");
     private final String displayName;
 
-    public static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(FileTaskStatusEnum.TRANSFERRING, FileTaskStatusEnum.SUSPENDED);
-    public static final Set<FileTaskStatusEnum> VALID_CHANGE_TARGET_STATUSES = Set.of(FileTaskStatusEnum.CANCELLED, FileTaskStatusEnum.SUSPENDED);
+    public static final Set<FileTaskStatusEnum> ON_GOING_STATUSES = Set.of(TRANSFERRING, SUSPENDED);
+    public static final Set<FileTaskStatusEnum> VALID_CHANGE_TARGET_STATUSES = Set.of(CANCELLED, SUSPENDED, FAILED);
 
     FileTaskStatusEnum(String displayName) {
         this.displayName = displayName;

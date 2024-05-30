@@ -33,6 +33,7 @@ public class FileChunkFetchAcknowledgeResponseCmdHandler implements TcpCommonCmd
         }
         if (task.getTransferredSize() >= task.getFileSize()) {
             task.setStatus(FileTaskStatusEnum.COMPLETED);
+            ctx.close();
         }
         fileTaskManager.addOrUpdateTask(task);
     }
