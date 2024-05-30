@@ -2,7 +2,6 @@ package org.zh.chatter.cmd.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.FileTaskStatusEnum;
@@ -18,7 +17,7 @@ import java.io.Serializable;
 public class FileChunkFetchAcknowledgeResponseCmdHandler implements TcpCommonCmdHandler {
     @Resource
     private FileTaskManager fileTaskManager;
-    @Autowired
+    @Resource
     private LockManager lockManager;
 
     @Override
