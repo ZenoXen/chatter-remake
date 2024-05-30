@@ -50,7 +50,7 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
         //发送一次离线通知
         udpServer.sendOfflineNotification();
         //停止udp服务
-        udpServer.stopListening();
+        udpServer.stopListening(true);
         //停止tcp服务
         tcpServer.stopListening();
         //关闭tcp客户端

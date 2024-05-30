@@ -28,7 +28,7 @@ public class NetworkInterfaceHolder {
         this.multicastAddress = new InetSocketAddress(multicastAddress, port);
     }
 
-    public synchronized void saveNetworkInterfaceReference(NetworkInterface networkInterface) {
+    public void saveNetworkInterfaceReference(NetworkInterface networkInterface) {
         if (networkInterface == null) {
             return;
         }

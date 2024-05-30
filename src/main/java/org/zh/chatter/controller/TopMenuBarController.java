@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NetworkInterfaceHolder;
 import org.zh.chatter.model.bo.NetworkInterfaceBO;
+import org.zh.chatter.network.UdpServer;
 
 import java.io.IOException;
 import java.net.NetworkInterface;
@@ -37,6 +38,9 @@ public class TopMenuBarController {
 
     @Resource
     private NetworkInterfaceHolder networkInterfaceHolder;
+
+    @Resource
+    private UdpServer udpServer;
 
     public void handleExit(ActionEvent actionEvent) {
         //退出
@@ -88,7 +92,7 @@ public class TopMenuBarController {
             NetworkInterfaceBO networkInterfaceBO = null;
             if (buttonType == ButtonType.OK) {
                 networkInterfaceBO = dialog.getSelectedItem();
-                networkInterfaceHolder.saveNetworkInterfaceReference(networkInterfaceBO.getNetworkInterface());
+                udpServer.changeNetworkInterface(networkInterfaceBO.getNetworkInterface());
             }
             return networkInterfaceBO;
         });

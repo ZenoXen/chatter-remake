@@ -21,6 +21,7 @@ import org.zh.chatter.model.dto.UdpCommonDataDTO;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.time.LocalDateTime;
 
 @Component
@@ -28,11 +29,15 @@ import java.time.LocalDateTime;
 public class UdpServer implements Runnable {
 
     private final EventLoopGroup group;
-    private final NioDatagramChannel channel;
+    private NioDatagramChannel channel;
     private final CurrentUserInfoHolder currentUserInfoHolder;
     private final Integer port;
     private final ObjectMapper objectMapper;
     private final NetworkInterfaceHolder networkInterfaceHolder;
+    private final UdpCommonDataDecoder udpCommonDataDecoder;
+    private final UdpCommonChannelInboundHandler udpCommonChannelInboundHandler;
+    private final UdpCommonDataEncoder udpCommonDataEncoder;
+
 
     public UdpServer(UdpCommonDataDecoder udpCommonDataDecoder,
                      UdpCommonChannelInboundHandler udpCommonChannelInboundHandler,
@@ -42,6 +47,18 @@ public class UdpServer implements Runnable {
                      NetworkInterfaceHolder networkInterfaceHolder,
                      @Value("${app.port.udp}") Integer port) throws InterruptedException {
         EventLoopGroup group = new NioEventLoopGroup();
+        this.group = group;
+        this.currentUserInfoHolder = currentUserInfoHolder;
+        this.objectMapper = objectMapper;
+        this.networkInterfaceHolder = networkInterfaceHolder;
+        this.port = port;
+        this.udpCommonDataDecoder = udpCommonDataDecoder;
+        this.udpCommonChannelInboundHandler = udpCommonChannelInboundHandler;
+        this.udpCommonDataEncoder = udpCommonDataEncoder;
+        this.bootstrapUdpServer();
+    }
+
+    private void bootstrapUdpServer() {
         Bootstrap bootstrap = new Bootstrap();
         MulticastAddressBO addressBO = networkInterfaceHolder.getSelectedLocalAddress();
         bootstrap.group(group)
@@ -60,15 +77,14 @@ public class UdpServer implements Runnable {
                         pipeline.addLast(udpCommonDataEncoder);
                     }
                 });
-        NioDatagramChannel channel = (NioDatagramChannel) bootstrap.bind(port).sync().channel();
-        InetSocketAddress multicastAddress = networkInterfaceHolder.getMulticastAddress();
-        channel.joinGroup(multicastAddress, addressBO.getNetworkInterface()).sync();
-        this.channel = channel;
-        this.group = group;
-        this.currentUserInfoHolder = currentUserInfoHolder;
-        this.objectMapper = objectMapper;
-        this.networkInterfaceHolder = networkInterfaceHolder;
-        this.port = port;
+        try {
+            NioDatagramChannel channel = (NioDatagramChannel) bootstrap.bind(port).sync().channel();
+            InetSocketAddress multicastAddress = networkInterfaceHolder.getMulticastAddress();
+            channel.joinGroup(multicastAddress, addressBO.getNetworkInterface()).sync();
+            this.channel = channel;
+        } catch (Exception e) {
+            log.error("心跳服务绑定失败");
+        }
     }
 
     @Override
@@ -78,14 +94,21 @@ public class UdpServer implements Runnable {
             channel.closeFuture().await();
         } catch (InterruptedException e) {
             log.error("启动心跳监听服务失败");
-        } finally {
-            log.info("心跳服务已关闭");
-            group.shutdownGracefully();
         }
     }
 
-    public void stopListening() {
+    public void stopListening(boolean shutdownGroup) {
         channel.close();
+        if (shutdownGroup) {
+            group.shutdownGracefully();
+            log.info("心跳服务已关闭");
+        }
+    }
+
+    public void changeNetworkInterface(NetworkInterface networkInterface) {
+        this.stopListening(false);
+        networkInterfaceHolder.saveNetworkInterfaceReference(networkInterface);
+        this.bootstrapUdpServer();
     }
 
     public void sendHeartbeat() throws Exception {
