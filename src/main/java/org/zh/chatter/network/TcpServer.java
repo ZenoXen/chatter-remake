@@ -36,12 +36,12 @@ public class TcpServer implements Runnable {
                     @Override
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
+                        //outbound
+                        pipeline.addLast(tcpCommonDataEncoder);
                         //inbound
                         pipeline.addLast(new LengthFieldBasedFrameDecoder(Constants.MAXIMUM_FRAME_LENGTH, Constants.LENGTH_FIELD_OFFSET, Constants.LENGTH_FIELD_LENGTH, Constants.LENGTH_FIELD_ADJUSTMENT, Constants.INITIAL_BYTES_TO_STRIP));
                         pipeline.addLast(new TcpCommonDataDecoder());
                         pipeline.addLast(tcpCommonChannelInboundHandler);
-                        //outbound
-                        pipeline.addLast(tcpCommonDataEncoder);
                     }
                 });
         this.channel = bootstrap.bind(port).sync().channel();

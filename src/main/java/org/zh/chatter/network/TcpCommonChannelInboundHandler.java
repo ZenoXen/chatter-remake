@@ -1,6 +1,6 @@
 package org.zh.chatter.network;
 
-import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.SerializeUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,6 +29,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
         Channel channel = ctx.channel();
         InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
         InetAddress address = inetSocketAddress.getAddress();
@@ -38,10 +39,21 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
         Channel channel = ctx.channel();
         InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
         InetAddress address = inetSocketAddress.getAddress();
         log.info("tcp连接已断开：address = {}", address);
+        tcpConnectionManager.removeAndCloseChannel(address);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.exceptionCaught(ctx, cause);
+        log.error("tcp连接过程中发生异常：", cause);
+        Channel channel = ctx.channel();
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
+        InetAddress address = inetSocketAddress.getAddress();
         tcpConnectionManager.removeAndCloseChannel(address);
     }
 
@@ -54,7 +66,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
             return;
         }
         byte[] payload = dataDTO.getPayload();
-        Serializable deserialized = ObjectUtil.deserialize(payload, type.getPayloadClass());
+        Serializable deserialized = SerializeUtil.deserialize(payload);
         TcpCommonCmdHandler handler = applicationContext.getBean(type.getHandlerClass());
         log.info("分发payload处理，type = {}, deserialized = {}", type, deserialized);
         handler.handle(ctx, dataDTO, deserialized);

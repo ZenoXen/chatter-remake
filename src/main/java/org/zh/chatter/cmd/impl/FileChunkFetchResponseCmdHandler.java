@@ -53,7 +53,7 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
             RandomAccessFile targetFile = task.getTargetFile();
             if (targetFile == null) {
                 try {
-                    targetFile = new RandomAccessFile(task.getTargetFilePath(), "w");
+                    targetFile = new RandomAccessFile(task.getTargetFilePath(), "rw");
                 } catch (FileNotFoundException e) {
                     throw new RuntimeException(e);
                 }
