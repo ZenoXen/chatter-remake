@@ -8,6 +8,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.model.bo.FileTaskBO;
@@ -17,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
+@Slf4j
 public class FileTaskManager {
     private final Map<String, FileTaskBO> map;
     @Getter
@@ -35,6 +37,7 @@ public class FileTaskManager {
         map.put(taskId, fileTaskBO);
         FileTaskCellVO cellVO = this.convertFileTaskBO(fileTaskBO);
         this.handleFileTaskStatus(cellVO);
+        log.info("添加/更新文件任务：id = {} status = {}", taskId, fileTaskBO.getStatus());
     }
 
     private FileTaskCellVO convertFileTaskBO(FileTaskBO fileTaskBO) {

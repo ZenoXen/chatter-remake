@@ -7,7 +7,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
@@ -46,19 +45,21 @@ public class TcpClient {
                      CurrentUserInfoHolder currentUserInfoHolder) {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
-        bootstrap.group(group).channel(NioSocketChannel.class).option(ChannelOption.TCP_NODELAY, true).handler(new ChannelInitializer<NioDatagramChannel>() {
-            @Override
-            protected void initChannel(NioDatagramChannel ch) {
-                ChannelPipeline pipeline = ch.pipeline();
-                //inbound
-                pipeline.addLast(lengthFieldBasedFrameDecoder);
-                //ByteToMessageDecoder无法标为Sharable
-                pipeline.addLast(new TcpCommonDataDecoder());
-                pipeline.addLast(tcpCommonChannelInboundHandler);
-                //outbound
-                pipeline.addLast(tcpCommonDataEncoder);
-            }
-        });
+        bootstrap.group(group).channel(NioSocketChannel.class)
+                .option(ChannelOption.TCP_NODELAY, true)
+                .handler(new ChannelInitializer<NioSocketChannel>() {
+                    @Override
+                    protected void initChannel(NioSocketChannel ch) {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        //inbound
+                        pipeline.addLast(lengthFieldBasedFrameDecoder);
+                        //ByteToMessageDecoder无法标为Sharable
+                        pipeline.addLast(new TcpCommonDataDecoder());
+                        pipeline.addLast(tcpCommonChannelInboundHandler);
+                        //outbound
+                        pipeline.addLast(tcpCommonDataEncoder);
+                    }
+                });
         this.group = group;
         this.serverTcpPort = port;
         this.bootstrap = bootstrap;
@@ -104,6 +105,8 @@ public class TcpClient {
         FileTransferRequestBO requestBO = new FileTransferRequestBO();
         requestBO.setFileSize(fileSize);
         requestBO.setFilename(fileName);
-        channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO));
+        TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO);
+        channel.writeAndFlush(tcpCommonDataDTO);
+        log.info("发送文件请求到{}：{}", userVO.getAddress(), tcpCommonDataDTO);
     }
 }

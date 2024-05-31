@@ -32,6 +32,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         byte[] payload = dataDTO.getPayload();
         Serializable deserialized = ObjectUtil.deserialize(payload, type.getPayloadClass());
         TcpCommonCmdHandler handler = applicationContext.getBean(type.getHandlerClass());
+        log.info("分发payload处理，type = {}, deserialized = {}", type, deserialized);
         handler.handle(ctx, dataDTO, deserialized);
     }
 }

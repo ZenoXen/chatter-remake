@@ -1,10 +1,7 @@
 package org.zh.chatter.model.dto;
 
 import cn.hutool.core.util.ObjectUtil;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.util.Constants;
 
@@ -21,6 +18,7 @@ public class TcpCommonDataDTO {
     private String userId;
     private long timestamp;
     private long payloadLength;
+    @ToString.Exclude
     private byte[] payload;
 
     public static <T extends Serializable> TcpCommonDataDTO encapsulate(TcpCmdTypeEnum cmdType, String sessionId, String userId, T data) {
