@@ -9,6 +9,7 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.util.Constants;
 
 @Component
 @Slf4j
@@ -23,7 +24,6 @@ public class TcpServer implements Runnable {
 
 
     public TcpServer(@Value("${app.port.tcp}") Integer port,
-                     LengthFieldBasedFrameDecoder lengthFieldBasedFrameDecoder,
                      TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
                      TcpCommonDataEncoder tcpCommonDataEncoder) throws InterruptedException {
         EventLoopGroup bossGroup = new NioEventLoopGroup(BOSS_GROUP_THREAD_NUM),
@@ -37,7 +37,7 @@ public class TcpServer implements Runnable {
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
-                        pipeline.addLast(lengthFieldBasedFrameDecoder);
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(Constants.MAXIMUM_FRAME_LENGTH, Constants.LENGTH_FIELD_OFFSET, Constants.LENGTH_FIELD_LENGTH, Constants.LENGTH_FIELD_ADJUSTMENT, Constants.INITIAL_BYTES_TO_STRIP));
                         pipeline.addLast(new TcpCommonDataDecoder());
                         pipeline.addLast(tcpCommonChannelInboundHandler);
                         //outbound

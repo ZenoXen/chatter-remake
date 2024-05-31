@@ -1,6 +1,7 @@
 package org.zh.chatter.network;
 
 import cn.hutool.core.util.ObjectUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -10,9 +11,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
+import org.zh.chatter.manager.TcpConnectionManager;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 @Component
 @Slf4j
@@ -20,6 +24,26 @@ import java.io.Serializable;
 public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<TcpCommonDataDTO> {
     @Resource
     private ApplicationContext applicationContext;
+    @Resource
+    private TcpConnectionManager tcpConnectionManager;
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        Channel channel = ctx.channel();
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
+        InetAddress address = inetSocketAddress.getAddress();
+        log.info("接收到tcp连接请求：address = {}", address);
+        tcpConnectionManager.addChannel(address, channel);
+    }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        Channel channel = ctx.channel();
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
+        InetAddress address = inetSocketAddress.getAddress();
+        log.info("tcp连接已断开：address = {}", address);
+        tcpConnectionManager.removeAndCloseChannel(address);
+    }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO) throws Exception {

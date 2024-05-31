@@ -21,6 +21,7 @@ import org.zh.chatter.model.bo.FileTransferRequestBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.UserVO;
+import org.zh.chatter.util.Constants;
 import org.zh.chatter.util.IdUtil;
 
 import java.io.File;
@@ -38,7 +39,6 @@ public class TcpClient {
 
 
     public TcpClient(@Value("${app.port.tcp}") Integer port,
-                     LengthFieldBasedFrameDecoder lengthFieldBasedFrameDecoder,
                      TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
                      TcpCommonDataEncoder tcpCommonDataEncoder,
                      FileTaskManager fileTaskManager,
@@ -53,7 +53,7 @@ public class TcpClient {
                     protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
-                        pipeline.addLast(lengthFieldBasedFrameDecoder);
+                        pipeline.addLast(new LengthFieldBasedFrameDecoder(Constants.MAXIMUM_FRAME_LENGTH, Constants.LENGTH_FIELD_OFFSET, Constants.LENGTH_FIELD_LENGTH, Constants.LENGTH_FIELD_ADJUSTMENT, Constants.INITIAL_BYTES_TO_STRIP));
                         //ByteToMessageDecoder无法标为Sharable
                         pipeline.addLast(new TcpCommonDataDecoder());
                         pipeline.addLast(tcpCommonChannelInboundHandler);

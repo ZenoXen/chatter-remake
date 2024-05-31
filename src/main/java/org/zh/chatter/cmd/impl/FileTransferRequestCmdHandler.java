@@ -3,6 +3,7 @@ package org.zh.chatter.cmd.impl;
 import cn.hutool.core.io.FileUtil;
 import io.netty.channel.ChannelHandlerContext;
 import jakarta.annotation.Resource;
+import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
@@ -52,35 +53,40 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
                 return;
             }
             String senderName = node.getUser().getUsername();
-            Optional<ButtonType> result = this.showAcceptFileConfirmation(senderName, filename, fileSize);
-            boolean accept = result.filter(bt -> bt.equals(ButtonType.OK)).isPresent();
-            long currentTimeMillis = System.currentTimeMillis();
-            FileTransferAcknowledgeResponseBO responseBO = new FileTransferAcknowledgeResponseBO();
-            responseBO.setAcknowledgeTimestamp(currentTimeMillis);
-            //响应请求，并决定是否要保存文件任务
-            String sessionId = dataDTO.getSessionId();
-            boolean savePathSelected = false;
-            if (accept) {
-                //选择保存路径
-                File savePath = this.showSavePathFileChooser(filename);
-                if (savePath != null) {
-                    savePathSelected = true;
-                    FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
-                            .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
-                            .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel(ctx.channel())
-                            .isMySelf(false).build();
-                    fileTaskManager.addOrUpdateTask(fileTaskBO);
-                }
-            }
-            boolean fileAccepted = accept && savePathSelected;
-            responseBO.setAccept(fileAccepted);
-            String userId = currentUserInfoHolder.getCurrentUser().getId();
-            ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_ACKNOWLEDGE_RESPONSE, sessionId, userId, responseBO));
-            //请求第一个文件块
-            if (fileAccepted) {
-                this.sendFirstFileChunkRequest(ctx, sessionId, userId);
-            }
+            //在fx线程中弹出确认提示、路径选框等
+            Platform.runLater(() -> this.doHandleFileTransferRequest(ctx, dataDTO, senderName, filename, fileSize, senderId));
         });
+    }
+
+    private void doHandleFileTransferRequest(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, String senderName, String filename, long fileSize, String senderId) {
+        Optional<ButtonType> result = this.showAcceptFileConfirmation(senderName, filename, fileSize);
+        boolean accept = result.filter(bt -> bt.equals(ButtonType.OK)).isPresent();
+        long currentTimeMillis = System.currentTimeMillis();
+        FileTransferAcknowledgeResponseBO responseBO = new FileTransferAcknowledgeResponseBO();
+        responseBO.setAcknowledgeTimestamp(currentTimeMillis);
+        //响应请求，并决定是否要保存文件任务
+        String sessionId = dataDTO.getSessionId();
+        boolean savePathSelected = false;
+        if (accept) {
+            //选择保存路径
+            File savePath = this.showSavePathFileChooser(filename);
+            if (savePath != null) {
+                savePathSelected = true;
+                FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
+                        .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
+                        .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel(ctx.channel())
+                        .isMySelf(false).build();
+                fileTaskManager.addOrUpdateTask(fileTaskBO);
+            }
+        }
+        boolean fileAccepted = accept && savePathSelected;
+        responseBO.setAccept(fileAccepted);
+        String userId = currentUserInfoHolder.getCurrentUser().getId();
+        ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_ACKNOWLEDGE_RESPONSE, sessionId, userId, responseBO));
+        //请求第一个文件块
+        if (fileAccepted) {
+            this.sendFirstFileChunkRequest(ctx, sessionId, userId);
+        }
     }
 
     private File showSavePathFileChooser(String filename) {

@@ -23,6 +23,7 @@ public class TcpCommonDataDecoder extends ByteToMessageDecoder {
             log.warn("接收到的tcp包小于协议最小包大小，跳过");
             return;
         }
+        log.debug("ByteBuf in size：{}", in.readableBytes());
         TcpCommonDataDTO tcpCommonDataDTO = new TcpCommonDataDTO();
         tcpCommonDataDTO.setProtocolVersion(in.readByte());
         tcpCommonDataDTO.setMessageType(in.readByte());

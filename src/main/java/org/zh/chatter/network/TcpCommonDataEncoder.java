@@ -23,5 +23,6 @@ public class TcpCommonDataEncoder extends MessageToByteEncoder<TcpCommonDataDTO>
         out.writeLong(msg.getTimestamp());
         out.writeLong(msg.getPayloadLength());
         out.writeBytes(msg.getPayload());
+        log.debug("ByteBuf out size：{}", out.readableBytes());
     }
 }
