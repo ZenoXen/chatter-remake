@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: local
   application:
     name: chatter-remake
 app:
@@ -9,4 +11,6 @@ app:
     tcp: 7748
 logging:
   level:
-    root: debug
+    org:
+      zh:
+        chatter: debug
