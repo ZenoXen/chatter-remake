@@ -14,8 +14,6 @@ import org.zh.chatter.manager.LockManager;
 import org.zh.chatter.model.bo.*;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -40,56 +38,56 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
         FileChunkFetchResponseBO fileChunkFetchResponseBO = (FileChunkFetchResponseBO) payload;
         String sessionId = dataDTO.getSessionId();
         lockManager.runWithLock(sessionId, () -> {
-            FileTaskBO task = fileTaskManager.getTask(sessionId);
-            if (task == null) {
-                return;
+            try {
+                this.checkAndSaveCurrentChunk(ctx, sessionId, fileChunkFetchResponseBO);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-            //校验和对比
-            byte[] chunkData = fileChunkFetchResponseBO.getChunkData();
-            byte[] checkSum = md5.digest(chunkData);
-            int chunkSize = chunkData.length;
-            //如果校验和不一致，重试请求这一个文件块
-            boolean needRetry = !Arrays.equals(fileChunkFetchResponseBO.getFileChunkChecksum(), checkSum);
-            RandomAccessFile targetFile = task.getTargetFile();
-            if (targetFile == null) {
-                try {
-                    targetFile = new RandomAccessFile(task.getTargetFilePath(), "rw");
-                } catch (FileNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            task.setTargetFile(targetFile);
-            //如果需要重试，则再次请求当前文件快（如果重试次数达到上限，任务结束），否则请求下一个文件块
-            if (needRetry) {
-                if (task.getChunkRetryTimes() >= MAX_CHUNK_RETRY_TIMES) {
-                    task.setStatus(FileTaskStatusEnum.FAILED);
-                    this.sendTaskFiledNotification(ctx, sessionId);
-                } else {
-                    task.setChunkRetryTimes(task.getChunkRetryTimes() + 1);
-                    log.warn("文件 {} 块号 {} 校验和不一致，当前重试次数 {}", task.getFileName(), task.getCurrentChunkNo(), task.getChunkRetryTimes());
-                }
-            } else {
-                try {
-                    targetFile.write(chunkData);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                long transferredSize = task.getTransferredSize() + chunkSize;
-                task.setTransferredSize(transferredSize);
-                task.setTransferProgress(transferredSize / (double) task.getFileSize());
-                this.sendChunkAcknowledgeResponse(ctx, task, chunkSize);
-            }
-            //如果文件数据全部传输完毕，更新任务状态完结，关闭channel
-            if (task.getTransferredSize() >= task.getFileSize()) {
-                task.setStatus(FileTaskStatusEnum.COMPLETED);
-            }
-            //如果任务状态仍然处于传输中，就继续获取下一块文件
-            if (FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {
-                task.setCurrentChunkNo(task.getCurrentChunkNo() + 1);
-                this.requestChunk(ctx, task);
-            }
-            fileTaskManager.addOrUpdateTask(task);
         });
+    }
+
+    private void checkAndSaveCurrentChunk(ChannelHandlerContext ctx, String sessionId, FileChunkFetchResponseBO fileChunkFetchResponseBO) throws Exception {
+        FileTaskBO task = fileTaskManager.getTask(sessionId);
+        if (task == null) {
+            return;
+        }
+        //校验和对比
+        byte[] chunkData = fileChunkFetchResponseBO.getChunkData();
+        byte[] checkSum = md5.digest(chunkData);
+        int chunkSize = chunkData.length;
+        //如果校验和不一致，重试请求这一个文件块
+        boolean needRetry = !Arrays.equals(fileChunkFetchResponseBO.getFileChunkChecksum(), checkSum);
+        RandomAccessFile targetFile = task.getTargetFile();
+        if (targetFile == null) {
+            targetFile = new RandomAccessFile(task.getTargetFilePath(), "rw");
+        }
+        task.setTargetFile(targetFile);
+        //如果需要重试，则再次请求当前文件快（如果重试次数达到上限，任务结束），否则请求下一个文件块
+        if (needRetry) {
+            if (task.getChunkRetryTimes() >= MAX_CHUNK_RETRY_TIMES) {
+                task.setStatus(FileTaskStatusEnum.FAILED);
+                this.sendTaskFiledNotification(ctx, sessionId);
+            } else {
+                task.setChunkRetryTimes(task.getChunkRetryTimes() + 1);
+                log.warn("文件 {} 块号 {} 校验和不一致，当前重试次数 {}", task.getFileName(), task.getCurrentChunkNo(), task.getChunkRetryTimes());
+            }
+        } else {
+            targetFile.write(chunkData);
+            long transferredSize = task.getTransferredSize() + chunkSize;
+            task.setTransferredSize(transferredSize);
+            task.setTransferProgress(transferredSize / (double) task.getFileSize());
+            this.sendChunkAcknowledgeResponse(ctx, task, chunkSize);
+        }
+        //如果文件数据全部传输完毕，更新任务状态完结，关闭channel
+        if (task.getTransferredSize() >= task.getFileSize()) {
+            task.setStatus(FileTaskStatusEnum.COMPLETED);
+        }
+        //如果任务状态仍然处于传输中，就继续获取下一块文件
+        if (FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {
+            task.setCurrentChunkNo(task.getCurrentChunkNo() + 1);
+            this.requestChunk(ctx, task);
+        }
+        fileTaskManager.addOrUpdateTask(task);
     }
 
     private void sendTaskFiledNotification(ChannelHandlerContext ctx, String sessionId) {
