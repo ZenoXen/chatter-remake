@@ -1,12 +1,9 @@
 package org.zh.chatter.network;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioDatagramChannel;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +17,7 @@ public class TcpServer implements Runnable {
     public static final int BOSS_GROUP_THREAD_NUM = 1;
     public static final int SO_BACKLOG_VALUE = 100;
 
-    private final NioServerSocketChannel channel;
+    private final Channel channel;
     private final EventLoopGroup bossGroup;
     private final EventLoopGroup workerGroup;
 
@@ -35,9 +32,9 @@ public class TcpServer implements Runnable {
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
                 .option(ChannelOption.SO_BACKLOG, SO_BACKLOG_VALUE)
-                .childHandler(new ChannelInitializer<NioDatagramChannel>() {
+                .childHandler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(NioDatagramChannel ch) {
+                    protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
                         pipeline.addLast(lengthFieldBasedFrameDecoder);
@@ -47,7 +44,7 @@ public class TcpServer implements Runnable {
                         pipeline.addLast(tcpCommonDataEncoder);
                     }
                 });
-        this.channel = (NioServerSocketChannel) bootstrap.bind(port).sync().channel();
+        this.channel = bootstrap.bind(port).sync().channel();
         this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;
     }

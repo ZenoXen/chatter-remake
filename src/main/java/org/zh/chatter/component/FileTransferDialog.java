@@ -1,7 +1,7 @@
 package org.zh.chatter.component;
 
 import cn.hutool.core.collection.CollectionUtil;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.Channel;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -146,7 +146,7 @@ public class FileTransferDialog extends Dialog<Void> {
                             FileTaskStatusEnum oppositeStatus = getOppositeStatus(task.getStatus());
                             task.setStatus(oppositeStatus);
                             fileTaskManager.addOrUpdateTask(task);
-                            NioSocketChannel channel = task.getChannel();
+                            Channel channel = task.getChannel();
                             String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
                             FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
                             fileTransferStatusChangedNotificationBO.setTargetStatus(oppositeStatus);
@@ -186,12 +186,11 @@ public class FileTransferDialog extends Dialog<Void> {
                         if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
                             task.setStatus(FileTaskStatusEnum.CANCELLED);
                             fileTaskManager.addOrUpdateTask(task);
-                            NioSocketChannel channel = task.getChannel();
+                            Channel channel = task.getChannel();
                             String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
                             FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
                             fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.CANCELLED);
                             channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
-                            channel.close();
                         }
                     });
                 });

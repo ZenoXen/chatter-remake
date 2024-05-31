@@ -4,7 +4,6 @@ import cn.hutool.crypto.digest.MD5;
 import io.netty.channel.ChannelHandlerContext;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.FileTaskStatusEnum;
@@ -65,7 +64,6 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
                 if (task.getChunkRetryTimes() >= MAX_CHUNK_RETRY_TIMES) {
                     task.setStatus(FileTaskStatusEnum.FAILED);
                     this.sendTaskFiledNotification(ctx, sessionId);
-                    ctx.close();
                 } else {
                     task.setChunkRetryTimes(task.getChunkRetryTimes() + 1);
                     log.warn("文件 {} 块号 {} 校验和不一致，当前重试次数 {}", task.getFileName(), task.getCurrentChunkNo(), task.getChunkRetryTimes());
@@ -84,7 +82,6 @@ public class FileChunkFetchResponseCmdHandler implements TcpCommonCmdHandler {
             //如果文件数据全部传输完毕，更新任务状态完结，关闭channel
             if (task.getTransferredSize() >= task.getFileSize()) {
                 task.setStatus(FileTaskStatusEnum.COMPLETED);
-                ctx.close();
             }
             //如果任务状态仍然处于传输中，就继续获取下一块文件
             if (FileTaskStatusEnum.TRANSFERRING.equals(task.getStatus())) {

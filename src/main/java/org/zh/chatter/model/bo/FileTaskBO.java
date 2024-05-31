@@ -1,6 +1,6 @@
 package org.zh.chatter.model.bo;
 
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +26,7 @@ public class FileTaskBO {
     private String senderName;
     private long sendTime;
     private FileTaskStatusEnum status;
-    private NioSocketChannel channel;
+    private Channel channel;
     private boolean isMySelf;
 
     /**

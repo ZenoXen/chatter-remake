@@ -2,11 +2,9 @@ package org.zh.chatter.network;
 
 import cn.hutool.core.io.FileUtil;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +15,7 @@ import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
+import org.zh.chatter.manager.TcpConnectionManager;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferRequestBO;
 import org.zh.chatter.model.bo.NodeUserBO;
@@ -35,6 +34,7 @@ public class TcpClient {
     private final Bootstrap bootstrap;
     private final FileTaskManager fileTaskManager;
     private final CurrentUserInfoHolder currentUserInfoHolder;
+    private final TcpConnectionManager tcpConnectionManager;
 
 
     public TcpClient(@Value("${app.port.tcp}") Integer port,
@@ -42,14 +42,15 @@ public class TcpClient {
                      TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
                      TcpCommonDataEncoder tcpCommonDataEncoder,
                      FileTaskManager fileTaskManager,
-                     CurrentUserInfoHolder currentUserInfoHolder) {
+                     CurrentUserInfoHolder currentUserInfoHolder,
+                     TcpConnectionManager tcpConnectionManager) {
         EventLoopGroup group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(group).channel(NioSocketChannel.class)
                 .option(ChannelOption.TCP_NODELAY, true)
-                .handler(new ChannelInitializer<NioSocketChannel>() {
+                .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
-                    protected void initChannel(NioSocketChannel ch) {
+                    protected void initChannel(SocketChannel ch) {
                         ChannelPipeline pipeline = ch.pipeline();
                         //inbound
                         pipeline.addLast(lengthFieldBasedFrameDecoder);
@@ -65,15 +66,22 @@ public class TcpClient {
         this.bootstrap = bootstrap;
         this.fileTaskManager = fileTaskManager;
         this.currentUserInfoHolder = currentUserInfoHolder;
+        this.tcpConnectionManager = tcpConnectionManager;
     }
 
     public void shutdown() {
         group.shutdownGracefully();
     }
 
-    public NioSocketChannel connectHost(InetAddress host) {
+    public Channel connectHost(InetAddress host) {
+        Channel existingChannel = tcpConnectionManager.getChannel(host);
+        if (existingChannel != null) {
+            return existingChannel;
+        }
         try {
-            return (NioSocketChannel) bootstrap.connect(host, serverTcpPort).sync().channel();
+            Channel channel = bootstrap.connect(host, serverTcpPort).sync().channel();
+            tcpConnectionManager.addChannel(host, channel);
+            return channel;
         } catch (Exception e) {
             log.error("建立tcp连接失败：", e);
         }
@@ -90,7 +98,7 @@ public class TcpClient {
             return;
         }
         //保存channel（用于传输完成后关闭），发送文件传输请求
-        NioSocketChannel channel = this.connectHost(userVO.getAddress());
+        Channel channel = this.connectHost(userVO.getAddress());
         String taskId = IdUtil.genId();
         String fileName = file.getName();
         long fileSize = file.length();

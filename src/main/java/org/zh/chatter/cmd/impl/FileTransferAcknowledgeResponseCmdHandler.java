@@ -34,7 +34,6 @@ public class FileTransferAcknowledgeResponseCmdHandler implements TcpCommonCmdHa
                 task.setStatus(FileTaskStatusEnum.TRANSFERRING);
             } else {
                 task.setStatus(FileTaskStatusEnum.REJECTED);
-                ctx.close();
             }
             fileTaskManager.addOrUpdateTask(task);
         });

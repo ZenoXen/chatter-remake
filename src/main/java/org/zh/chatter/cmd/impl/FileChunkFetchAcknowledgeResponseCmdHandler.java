@@ -7,6 +7,7 @@ import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.LockManager;
+import org.zh.chatter.manager.TcpConnectionManager;
 import org.zh.chatter.model.bo.FileChunkFetchAcknowledgeResponseBO;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
@@ -19,6 +20,8 @@ public class FileChunkFetchAcknowledgeResponseCmdHandler implements TcpCommonCmd
     private FileTaskManager fileTaskManager;
     @Resource
     private LockManager lockManager;
+    @Resource
+    private TcpConnectionManager tcpConnectionManager;
 
     @Override
     public void handle(ChannelHandlerContext ctx, TcpCommonDataDTO dataDTO, Serializable payload) throws Exception {
@@ -37,7 +40,6 @@ public class FileChunkFetchAcknowledgeResponseCmdHandler implements TcpCommonCmd
             }
             if (task.getTransferredSize() >= task.getFileSize()) {
                 task.setStatus(FileTaskStatusEnum.COMPLETED);
-                ctx.close();
             }
             fileTaskManager.addOrUpdateTask(task);
         });

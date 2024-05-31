@@ -2,7 +2,6 @@ package org.zh.chatter.cmd.impl;
 
 import cn.hutool.core.io.FileUtil;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import jakarta.annotation.Resource;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
@@ -68,7 +67,7 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
                     savePathSelected = true;
                     FileTaskBO fileTaskBO = FileTaskBO.builder().taskId(sessionId).fileName(filename).targetFilePath(savePath)
                             .fileSize(fileSize).senderId(senderId).senderName(senderName).sendTime(dataDTO.getTimestamp())
-                            .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel((NioSocketChannel) ctx.channel())
+                            .status(FileTaskStatusEnum.TRANSFERRING).currentChunkNo(0).chunkRetryTimes(0).transferProgress(0D).transferredSize(0L).channel(ctx.channel())
                             .isMySelf(false).build();
                     fileTaskManager.addOrUpdateTask(fileTaskBO);
                 }
@@ -80,8 +79,6 @@ public class FileTransferRequestCmdHandler implements TcpCommonCmdHandler {
             //请求第一个文件块
             if (fileAccepted) {
                 this.sendFirstFileChunkRequest(ctx, sessionId, userId);
-            } else {
-                ctx.close();
             }
         });
     }
