@@ -3,6 +3,8 @@ package org.zh.chatter.cmd.impl;
 import cn.hutool.crypto.digest.MD5;
 import io.netty.channel.ChannelHandlerContext;
 import jakarta.annotation.Resource;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.cmd.TcpCommonCmdHandler;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
@@ -62,5 +64,10 @@ public class FileChunkFetchRequestCmdHandler implements TcpCommonCmdHandler {
         fileChunkFetchResponseBO.setChunkData(chunkData);
         //返回文件块，但暂时不更新文件传输进度，等待FileChunkFetchAcknowledgeResponse后再更新进度
         ctx.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_CHUNK_FETCH_RESPONSE, sessionId, currentUserInfoHolder.getCurrentUser().getId(), fileChunkFetchResponseBO));
+    }
+
+    public static void main(String[] args) {
+        SimpleStringProperty simpleStringProperty = new SimpleStringProperty("1233");
+        System.out.println(simpleStringProperty.equals(new SimpleStringProperty("1233")));
     }
 }

@@ -60,8 +60,10 @@ public class FileTaskManager {
     }
 
     private void removeTaskFromList(FileTaskCellVO taskVO) {
-        inactiveTasks.remove(taskVO);
-        ongoingTasks.remove(taskVO);
+        boolean remove = inactiveTasks.remove(taskVO);
+        log.debug("removed：{}", remove);
+        boolean remove1 = ongoingTasks.remove(taskVO);
+        log.debug("removed1：{}", remove1);
     }
 
     private void addTaskToList(FileTaskCellVO taskVO, Boolean isOngoingNow) {
