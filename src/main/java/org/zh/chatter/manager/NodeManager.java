@@ -31,12 +31,9 @@ public class NodeManager {
     public synchronized boolean addNode(NodeBO node) {
         InetAddress address = node.getAddress();
         String userId = node.getUser().getId();
-        if (!this.isNodeOrUserExists(address, userId)) {
-            nodeMap.put(address, node);
-            userIdNodeMap.put(userId, node);
-            return true;
-        }
-        return false;
+        nodeMap.put(address, node);
+        userIdNodeMap.put(userId, node);
+        return true;
     }
 
     public synchronized NodeBO removeNode(InetAddress address) {
@@ -61,7 +58,4 @@ public class NodeManager {
         }).collect(Collectors.toList());
     }
 
-    private boolean isNodeOrUserExists(InetAddress address, String userId) {
-        return nodeMap.containsKey(address) || userIdNodeMap.containsKey(userId);
-    }
 }

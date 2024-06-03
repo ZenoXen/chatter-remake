@@ -39,7 +39,7 @@ public class HeartbeatScheduled {
 
     private static final Integer HEARTBEAT_FAIL_UPPER_LIMIT = 6;
     private static final Integer HEARTBEAT_DISCONNECT_COUNT = 3;
-    private static final long NODE_OFFLINE_DURATION = 30;
+    private static final long NODE_OFFLINE_DURATION = 1;
 
     /**
      * 每10秒钟发送一次心跳信息
