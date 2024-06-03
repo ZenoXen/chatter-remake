@@ -33,7 +33,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         Channel channel = ctx.channel();
         InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
         InetAddress address = inetSocketAddress.getAddress();
-        log.info("接收到tcp连接请求：address = {}", address);
+        log.debug("接收到tcp连接请求：address = {}", address);
         tcpConnectionManager.addOrUpdateChannel(address, channel);
     }
 
@@ -43,7 +43,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         Channel channel = ctx.channel();
         InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
         InetAddress address = inetSocketAddress.getAddress();
-        log.info("tcp连接已断开：address = {}", address);
+        log.debug("tcp连接已断开：address = {}", address);
         tcpConnectionManager.removeAndCloseChannel(address);
     }
 
@@ -64,7 +64,7 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         byte[] payload = dataDTO.getPayload();
         Serializable deserialized = SerializeUtil.deserialize(payload);
         TcpCommonCmdHandler handler = applicationContext.getBean(type.getHandlerClass());
-        log.info("分发payload处理，type = {}, deserialized = {}", type, deserialized);
+        log.debug("分发payload处理，type = {}, deserialized = {}", type, deserialized);
         handler.handle(ctx, dataDTO, deserialized);
     }
 }

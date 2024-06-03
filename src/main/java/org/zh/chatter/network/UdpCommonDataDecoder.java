@@ -44,7 +44,7 @@ public class UdpCommonDataDecoder extends MessageToMessageDecoder<DatagramPacket
         }
         UdpCommonDataDTO udpCommonDataDTO = objectMapper.readValue(byteBuf.toString(StandardCharsets.UTF_8), UdpCommonDataDTO.class);
         udpCommonDataDTO.setFromAddress(sender.getAddress());
-        log.info("接收commonDataDTO: {}", udpCommonDataDTO);
+        log.debug("接收commonDataDTO: {}", udpCommonDataDTO);
         out.add(udpCommonDataDTO);
     }
 }

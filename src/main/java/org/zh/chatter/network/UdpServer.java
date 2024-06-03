@@ -116,7 +116,7 @@ public class UdpServer implements Runnable {
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
         UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.HEARTBEAT.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
         channel.writeAndFlush(udpCommonDataDTO);
-        log.info("发送心跳信息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
+        log.debug("发送心跳信息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
 
     public void sendOfflineNotification() throws Exception {
@@ -124,7 +124,7 @@ public class UdpServer implements Runnable {
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
         UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.OFFLINE_NOTIFICATION.getCode(), null, address, port, objectMapper.writeValueAsString(currentUser));
         channel.writeAndFlush(udpCommonDataDTO);
-        log.info("发送离线通知： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
+        log.debug("发送离线通知： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
 
     public void sendChatMessage(String message) throws Exception {
@@ -133,6 +133,6 @@ public class UdpServer implements Runnable {
         ChatMessageBO chatMessageBO = new ChatMessageBO(currentUser, message, LocalDateTime.now());
         UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, address, port, objectMapper.writeValueAsString(chatMessageBO));
         channel.writeAndFlush(udpCommonDataDTO);
-        log.info("发送聊天消息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
+        log.debug("发送聊天消息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }
 }

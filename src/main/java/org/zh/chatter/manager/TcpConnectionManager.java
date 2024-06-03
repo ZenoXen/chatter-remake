@@ -33,7 +33,7 @@ public class TcpConnectionManager {
     public void removeAndCloseChannel(InetAddress inetAddress) {
         Channel channel = addressChannelMap.remove(inetAddress);
         if (channel != null && channel.isOpen()) {
-            log.info("关闭channel：{}", inetAddress);
+            log.debug("关闭channel：{}", inetAddress);
             channel.close();
         }
     }

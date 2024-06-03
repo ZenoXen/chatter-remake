@@ -61,7 +61,7 @@ public class FileTaskManager {
             inactiveTasks.add(cellVO);
             this.closeFile(fileTaskBO);
         }
-        log.info("添加/更新文件任务：id = {} status = {}", taskId, fileTaskBO.getStatus());
+        log.debug("添加/更新文件任务：id = {} status = {}", taskId, fileTaskBO.getStatus());
     }
 
     private boolean isFirstTimeAdded(String taskId) {
@@ -75,10 +75,12 @@ public class FileTaskManager {
         RandomAccessFile targetFile = fileTaskBO.getTargetFile();
         try {
             if (sourceFile != null) {
+                log.debug("关闭sourceFile：{}", fileTaskBO.getFileName());
                 sourceFile.close();
                 fileTaskBO.setSourceFile(null);
             }
             if (targetFile != null) {
+                log.debug("关闭targetFile：{}", fileTaskBO.getFileName());
                 targetFile.close();
                 fileTaskBO.setTargetFile(null);
             }

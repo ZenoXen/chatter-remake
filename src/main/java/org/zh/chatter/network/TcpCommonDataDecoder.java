@@ -38,7 +38,7 @@ public class TcpCommonDataDecoder extends ByteToMessageDecoder {
         byte[] payload = new byte[(int) payloadLength];
         in.readBytes(payload);
         tcpCommonDataDTO.setPayload(payload);
-        log.info("接收到来自{}的TcpCommonData：{}", ctx.channel().remoteAddress(), tcpCommonDataDTO);
+        log.debug("接收到来自{}的TcpCommonData：{}", ctx.channel().remoteAddress(), tcpCommonDataDTO);
         out.add(tcpCommonDataDTO);
     }
 }
