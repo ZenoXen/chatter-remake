@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.model.bo.FileTaskBO;
@@ -37,7 +36,14 @@ public class FileTaskManager {
         boolean taskFinished = this.isListChanged(fileTaskBO);
         map.put(taskId, fileTaskBO);
         FileTaskCellVO cellVO = FileTaskCellVO.convertFromFileTaskBO(fileTaskBO);
-        Optional.ofNullable(cellMap.get(taskId)).ifPresent(c -> BeanUtils.copyProperties(cellVO, c));
+        Optional.ofNullable(cellMap.get(taskId)).ifPresent(c -> {
+            c.setIsMySelf(cellVO.getIsMySelf());
+            c.getStatus().setValue(cellVO.getStatus().getValue());
+            c.getTransferredSize().setValue(cellVO.getTransferredSize().getValue());
+            c.getTransferProgress().setValue(cellVO.getTransferProgress().getValue());
+            c.getSenderName().setValue(cellVO.getSenderName().getValue());
+            c.getStatus().setValue(cellVO.getStatus().getValue());
+        });
         //第一次添加这个任务
         if (firstTimeAdded) {
             ongoingTasks.add(cellVO);
