@@ -53,10 +53,10 @@ public class FileTaskManager {
                 .taskId(new SimpleStringProperty(fileTaskBO.getTaskId())).build();
     }
 
-    private void handleFileTaskStatus(FileTaskCellVO taskVO) {
-        Boolean isOngoingNow = FileTaskStatusEnum.ON_GOING_STATUSES.contains(taskVO.getStatus().get());
-        this.removeTaskFromList(taskVO);
-        this.addTaskToList(taskVO, isOngoingNow);
+    private void handleFileTaskStatus(FileTaskCellVO fileTaskCellVO) {
+        Boolean isOngoingNow = FileTaskStatusEnum.ON_GOING_STATUSES.contains(fileTaskCellVO.getStatus().get());
+        this.removeTaskFromList(fileTaskCellVO);
+        this.addTaskToList(fileTaskCellVO, isOngoingNow);
     }
 
     private void removeTaskFromList(FileTaskCellVO taskVO) {

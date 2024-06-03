@@ -56,7 +56,7 @@ public class FileChunkFetchRequestCmdHandler implements TcpCommonCmdHandler {
         }
         int chunkSize = (int) Math.min(Constants.CHUNK_FETCH_SIZE, task.getFileSize() - task.getTransferredSize());
         byte[] chunkData = new byte[chunkSize];
-        randomAccessFile.read(chunkData, Math.toIntExact(task.getTransferredSize()), chunkSize);
+        randomAccessFile.read(chunkData);
         FileChunkFetchResponseBO fileChunkFetchResponseBO = new FileChunkFetchResponseBO();
         fileChunkFetchResponseBO.setFileChunkChecksum(md5.digest(chunkData));
         fileChunkFetchResponseBO.setChunkData(chunkData);
