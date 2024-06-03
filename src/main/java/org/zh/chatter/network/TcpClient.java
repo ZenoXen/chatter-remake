@@ -80,7 +80,7 @@ public class TcpClient {
         }
         try {
             Channel channel = bootstrap.connect(host, serverTcpPort).sync().channel();
-            tcpConnectionManager.addChannel(host, channel);
+            tcpConnectionManager.addOrUpdateChannel(host, channel);
             return channel;
         } catch (Exception e) {
             log.error("建立tcp连接失败：", e);

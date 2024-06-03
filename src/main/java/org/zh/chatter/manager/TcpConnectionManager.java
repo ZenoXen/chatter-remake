@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -21,13 +22,18 @@ public class TcpConnectionManager {
         return addressChannelMap.get(inetAddress);
     }
 
-    public void addChannel(InetAddress address, Channel channel) {
+    public Set<Map.Entry<InetAddress, Channel>> getAllEntries() {
+        return addressChannelMap.entrySet();
+    }
+
+    public void addOrUpdateChannel(InetAddress address, Channel channel) {
         addressChannelMap.put(address, channel);
     }
 
     public void removeAndCloseChannel(InetAddress inetAddress) {
         Channel channel = addressChannelMap.remove(inetAddress);
         if (channel != null && channel.isOpen()) {
+            log.info("关闭channel：{}", inetAddress);
             channel.close();
         }
     }

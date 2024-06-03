@@ -26,9 +26,9 @@ public class FileTransferDialog extends Dialog<Void> {
 
     private static final String CLOSE_BUTTON_TEXT = "关闭";
     private static final String DIALOG_TITLE = "文件发送列表";
-    private static final String TOP_LABEL = "文件任务";
+    private static final String TOP_LABEL = "历史文件任务";
     private static final String BOTTOM_LABEL = "进行中的任务";
-    private static final String TOP_TABLE_PLACEHOLDER = "没有文件任务";
+    private static final String TOP_TABLE_PLACEHOLDER = "没有历史文件任务";
     private static final String BOTTOM_TABLE_PLACEHOLDER = "没有进行中的任务";
     private static final int SPACING = 10;
     private static final int TOP_RIGHT_BOTTOM_LEFT = 10;
