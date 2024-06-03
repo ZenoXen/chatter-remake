@@ -34,7 +34,7 @@ public class NodeManager {
         boolean exists = this.isNodeOrUserExists(address, userId);
         nodeMap.put(address, node);
         userIdNodeMap.put(userId, node);
-        return exists;
+        return !exists;
     }
 
     private boolean isNodeOrUserExists(InetAddress address, String userId) {
