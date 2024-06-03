@@ -27,8 +27,12 @@ public class TcpCommonDataDecoder extends ByteToMessageDecoder {
         TcpCommonDataDTO tcpCommonDataDTO = new TcpCommonDataDTO();
         tcpCommonDataDTO.setProtocolVersion(in.readByte());
         tcpCommonDataDTO.setMessageType(in.readByte());
-        tcpCommonDataDTO.setSessionId(in.readBytes(SESSION_ID_LENGTH).toString(StandardCharsets.UTF_8));
-        tcpCommonDataDTO.setUserId(in.readBytes(USER_ID_LENGTH).toString(StandardCharsets.UTF_8));
+        ByteBuf sessionIdByteBuf = in.readBytes(SESSION_ID_LENGTH);
+        tcpCommonDataDTO.setSessionId(sessionIdByteBuf.toString(StandardCharsets.UTF_8));
+        sessionIdByteBuf.release();
+        ByteBuf userIdByteBuf = in.readBytes(USER_ID_LENGTH);
+        tcpCommonDataDTO.setUserId(userIdByteBuf.toString(StandardCharsets.UTF_8));
+        userIdByteBuf.release();
         tcpCommonDataDTO.setTimestamp(in.readLong());
         long payloadLength = in.readLong();
         if (payloadLength <= 0) {
