@@ -1,10 +1,5 @@
 package org.zh.chatter.manager;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleLongProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;
@@ -34,44 +29,29 @@ public class FileTaskManager {
 
     public void addOrUpdateTask(FileTaskBO fileTaskBO) {
         String taskId = fileTaskBO.getTaskId();
+        boolean firstTimeAdded = this.isFirstTimeAdded(fileTaskBO.getTaskId());
+        boolean taskFinished = this.isListChanged(fileTaskBO);
         map.put(taskId, fileTaskBO);
-        FileTaskCellVO cellVO = this.convertFileTaskBO(fileTaskBO);
-        this.handleFileTaskStatus(cellVO);
+        FileTaskCellVO cellVO = FileTaskCellVO.convertFromFileTaskBO(fileTaskBO);
+        if (firstTimeAdded) {
+            ongoingTasks.add(cellVO);
+        } else if (taskFinished) {
+            ongoingTasks.remove(cellVO);
+            inactiveTasks.add(cellVO);
+        }
         log.info("添加/更新文件任务：id = {} status = {}", taskId, fileTaskBO.getStatus());
     }
 
-    private FileTaskCellVO convertFileTaskBO(FileTaskBO fileTaskBO) {
-        return FileTaskCellVO.builder()
-                .fileName(new SimpleStringProperty(fileTaskBO.getFileName()))
-                .fileSize(new SimpleLongProperty(fileTaskBO.getFileSize()))
-                .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
-                .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
-                .sendTime(new SimpleObjectProperty<>(LocalDateTimeUtil.of(fileTaskBO.getSendTime())))
-                .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
-                .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
-                .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))
-                .taskId(new SimpleStringProperty(fileTaskBO.getTaskId())).build();
+    private boolean isFirstTimeAdded(String taskId) {
+        return !map.containsKey(taskId);
     }
 
-    private void handleFileTaskStatus(FileTaskCellVO fileTaskCellVO) {
-        Boolean isOngoingNow = FileTaskStatusEnum.ON_GOING_STATUSES.contains(fileTaskCellVO.getStatus().get());
-        this.removeTaskFromList(fileTaskCellVO);
-        this.addTaskToList(fileTaskCellVO, isOngoingNow);
-    }
-
-    private void removeTaskFromList(FileTaskCellVO taskVO) {
-        boolean remove = inactiveTasks.remove(taskVO);
-        log.debug("removed：{}", remove);
-        boolean remove1 = ongoingTasks.remove(taskVO);
-        log.debug("removed1：{}", remove1);
-    }
-
-    private void addTaskToList(FileTaskCellVO taskVO, Boolean isOngoingNow) {
-        if (isOngoingNow) {
-            ongoingTasks.add(taskVO);
-        } else {
-            inactiveTasks.add(taskVO);
+    private boolean isListChanged(FileTaskBO fileTaskBO) {
+        FileTaskBO existing = map.get(fileTaskBO.getTaskId());
+        if (existing == null) {
+            return false;
         }
+        return FileTaskStatusEnum.FINISHED_FILE_TASK_STATUSES.contains(fileTaskBO.getStatus());
     }
 
     public FileTaskBO getTask(String taskId) {

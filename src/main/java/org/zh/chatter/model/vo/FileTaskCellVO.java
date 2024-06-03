@@ -1,5 +1,6 @@
 package org.zh.chatter.model.vo;
 
+import cn.hutool.core.date.LocalDateTimeUtil;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.zh.chatter.enums.FileTaskStatusEnum;
+import org.zh.chatter.model.bo.FileTaskBO;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +29,19 @@ public class FileTaskCellVO {
     private SimpleStringProperty senderName;
     private SimpleObjectProperty<LocalDateTime> sendTime;
     private SimpleObjectProperty<FileTaskStatusEnum> status;
+
+    public static FileTaskCellVO convertFromFileTaskBO(FileTaskBO fileTaskBO) {
+        return FileTaskCellVO.builder()
+                .fileName(new SimpleStringProperty(fileTaskBO.getFileName()))
+                .fileSize(new SimpleLongProperty(fileTaskBO.getFileSize()))
+                .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
+                .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
+                .sendTime(new SimpleObjectProperty<>(LocalDateTimeUtil.of(fileTaskBO.getSendTime())))
+                .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
+                .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
+                .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))
+                .taskId(new SimpleStringProperty(fileTaskBO.getTaskId())).build();
+    }
 
     @Override
     public boolean equals(Object o) {

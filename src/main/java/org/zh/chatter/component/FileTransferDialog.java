@@ -165,7 +165,8 @@ public class FileTransferDialog extends Dialog<Void> {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
+                if (empty || !FileTaskStatusEnum.ON_GOING_STATUSES.contains(cellVO.getStatus().get())) {
                     setGraphic(null);
                 } else {
                     setGraphic(suspendButton);
