@@ -63,7 +63,7 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         nodeBO.setLastHeartTime(now);
         nodeBO.setUser(nodeUserBO);
         nodeBO.setIsMySelf(false);
-        boolean added = nodeManager.addNode(nodeBO);
+        boolean added = nodeManager.addOrUpdateNode(nodeBO);
         if (added) {
             notificationManager.addNotification(new NotificationVO(NotificationTypeEnum.NEW_USER_JOINED, now, nodeUserBO.getUsername()));
         }

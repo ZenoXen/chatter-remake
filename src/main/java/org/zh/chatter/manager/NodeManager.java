@@ -28,12 +28,17 @@ public class NodeManager {
         return userIdNodeMap.get(userId);
     }
 
-    public synchronized boolean addNode(NodeBO node) {
+    public synchronized boolean addOrUpdateNode(NodeBO node) {
         InetAddress address = node.getAddress();
         String userId = node.getUser().getId();
+        boolean exists = this.isNodeOrUserExists(address, userId);
         nodeMap.put(address, node);
         userIdNodeMap.put(userId, node);
-        return true;
+        return exists;
+    }
+
+    private boolean isNodeOrUserExists(InetAddress address, String userId) {
+        return nodeMap.containsKey(address) || userIdNodeMap.containsKey(userId);
     }
 
     public synchronized NodeBO removeNode(InetAddress address) {

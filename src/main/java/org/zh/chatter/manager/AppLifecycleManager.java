@@ -36,7 +36,7 @@ public class AppLifecycleManager implements InitializingBean, DisposableBean {
         NodeUserBO currentUser = NodeUserBO.generateOne();
         NodeBO nodeBO = new NodeBO(InetAddress.getLocalHost(), LocalDateTime.now(), currentUser, true);
         currentUserInfoHolder.setCurrentUser(currentUser);
-        nodeManager.addNode(nodeBO);
+        nodeManager.addOrUpdateNode(nodeBO);
         //启动udp服务
         new Thread(udpServer).start();
         //发送一次心跳信息
