@@ -33,7 +33,7 @@ public class UserListDialog extends Dialog<Void> {
         nameColumn.setMaxWidth(NAME_COLUMN_MAX_WIDTH);
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         idColumn.setMaxWidth(ID_COLUMN_MAX_WIDTH);
-        sendFileColumn.setCellFactory(ActionButtonTableCell.forTableColumn(SEND_FILE_BUTTON_TEXT, fileTaskButtonActions.getSendFileButtonAction(), null));
+        sendFileColumn.setCellFactory(ActionButtonTableCell.forTableColumn(SEND_FILE_BUTTON_TEXT, fileTaskButtonActions.getSendFileButtonAction(), fileTaskButtonActions.getSendFileButtonShowAction()));
         ObservableList<TableColumn<UserVO, ?>> tableColumns = tableView.getColumns();
         tableColumns.addAll(CollectionUtil.newArrayList(idColumn, nameColumn, sendFileColumn));
         tableView.setItems(FXCollections.observableList(users));

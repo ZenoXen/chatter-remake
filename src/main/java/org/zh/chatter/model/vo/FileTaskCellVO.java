@@ -35,7 +35,7 @@ public class FileTaskCellVO {
                 .fileSize(new SimpleStringProperty(FileUtil.readableFileSize(fileTaskBO.getFileSize())))
                 .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
                 .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
-                .sendTime(new SimpleStringProperty(DateUtil.formatDate(DateUtil.date(fileTaskBO.getSendTime()))))
+                .sendTime(new SimpleStringProperty(DateUtil.formatDateTime(DateUtil.date(fileTaskBO.getSendTime()))))
                 .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
                 .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
                 .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))

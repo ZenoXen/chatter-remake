@@ -93,6 +93,9 @@ public class FileTaskButtonActions {
         return userVO;
     };
 
+    @Getter
+    private Function<UserVO, Boolean> sendFileButtonShowAction = userVO -> !userVO.getIsMySelf();
+
     private FileTaskStatusEnum getOppositeStatus(FileTaskStatusEnum status) {
         return FileTaskStatusEnum.TRANSFERRING.equals(status) ? FileTaskStatusEnum.SUSPENDED : FileTaskStatusEnum.TRANSFERRING;
     }
