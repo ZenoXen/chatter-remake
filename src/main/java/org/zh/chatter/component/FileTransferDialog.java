@@ -76,7 +76,7 @@ public class FileTransferDialog extends Dialog<Void> {
         statusCol.setCellValueFactory(cellData -> cellData.getValue().getStatus());
 
         ObservableList<TableColumn<FileTaskCellVO, ?>> columns = fileTaskTable.getColumns();
-        columns.addAll(CollectionUtil.newArrayList(idCol, fileNameCol, senderCol, sendTimeCol, fileSizeCol, statusCol));
+        columns.addAll(CollectionUtil.newArrayList(isMySelfColumn, idCol, fileNameCol, senderCol, sendTimeCol, fileSizeCol, statusCol));
         return fileTaskTable;
     }
 
