@@ -12,10 +12,12 @@ import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.FileTransferDialog;
 import org.zh.chatter.component.UserListDialog;
-import org.zh.chatter.manager.*;
+import org.zh.chatter.manager.ChatMessageManager;
+import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.FileTaskManager;
+import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
-import org.zh.chatter.network.TcpClient;
 import org.zh.chatter.network.UdpServer;
 
 import java.net.URL;
@@ -27,11 +29,11 @@ import java.util.ResourceBundle;
 public class ChatAreaController implements Initializable {
     private static final KeyCodeCombination SEND_MESSAGE_SHORTCUT = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN);
     public static final int FILE_TRANSFER_DIALOG_WIDTH = 300;
-    public static final int FIEL_TRANSFER_DIALOG_HEIGHT = 400;
+    public static final int FILE_TRANSFER_DIALOG_HEIGHT = 400;
     @FXML
-    private TextArea inputArea;
+    private TextArea groupInputArea;
     @FXML
-    private ListView<ChatMessageVO> messageArea;
+    private ListView<ChatMessageVO> groupMessageArea;
     @Resource
     private NodeManager nodeManager;
     @Resource
@@ -43,25 +45,21 @@ public class ChatAreaController implements Initializable {
     @Resource
     private FileTaskManager fileTaskManager;
     @Resource
-    private TcpClient tcpClient;
-    @Resource
-    private LockManager lockManager;
-    @Resource
     private FileTaskButtonActions fileTaskButtonActions;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        messageArea.setItems(chatMessageManager.getChatMessageList());
-        messageArea.setCellFactory(c -> new ChatMessageCell());
+        groupMessageArea.setItems(chatMessageManager.getChatMessageList());
+        groupMessageArea.setCellFactory(c -> new ChatMessageCell());
     }
 
-    public void handleMessageSend() throws Exception {
+    public void handleGroupMessageSend() throws Exception {
         //清除输入框文本，并发送文本
-        String text = inputArea.getText();
+        String text = groupInputArea.getText();
         if (Strings.isEmpty(text)) {
             return;
         }
-        inputArea.clear();
+        groupInputArea.clear();
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         udpServer.sendChatMessage(text);
         this.showChatMessage(text, currentUser.getId(), currentUser.getUsername());
@@ -73,11 +71,11 @@ public class ChatAreaController implements Initializable {
 
     public void handleShortcutSend(KeyEvent keyEvent) throws Exception {
         if (SEND_MESSAGE_SHORTCUT.match(keyEvent)) {
-            this.handleMessageSend();
+            this.handleGroupMessageSend();
         }
     }
 
-    public void handleClearMessage(MouseEvent mouseEvent) {
+    public void handleClearGroupMessage(MouseEvent mouseEvent) {
         chatMessageManager.clearChatMessage();
     }
 
@@ -87,7 +85,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
+        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FILE_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
         dialog.show();
     }
 }

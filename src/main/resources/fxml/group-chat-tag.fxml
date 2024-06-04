@@ -1,0 +1,25 @@
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+<Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+     fx:controller="org.zh.chatter.controller.ChatAreaController"
+     closable="false" text="群聊" fx:id="groupChatTab">
+    <VBox>
+        <ScrollPane hbarPolicy="NEVER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0"
+                    prefWidth="650.0">
+            <ListView fx:id="groupMessageArea" prefHeight="400.0" prefWidth="650.0"/>
+        </ScrollPane>
+        <ToolBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="650.0">
+            <Button contentDisplay="CENTER" layoutX="70.0" layoutY="10.0"
+                    mnemonicParsing="false" text="清屏" onMouseClicked="#handleClearGroupMessage"/>
+            <Button alignment="CENTER" mnemonicParsing="false"
+                    onMouseClicked="#handleGroupMessageSend" text="发送"/>
+            <Button alignment="CENTER" layoutX="10.0" layoutY="10.0"
+                    mnemonicParsing="false" text="用户列表" onMouseClicked="#showUserList"/>
+            <Button alignment="CENTER" mnemonicParsing="false"
+                    onMouseClicked="#openFileTransferDialog" text="文件发送列表"/>
+        </ToolBar>
+        <ScrollPane hbarPolicy="NEVER" prefHeight="120.0" prefWidth="650.0">
+            <TextArea fx:id="groupInputArea" prefHeight="120.0" prefWidth="650.0" onKeyPressed="#handleShortcutSend"/>
+        </ScrollPane>
+    </VBox>
+</Tab>

@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
-<VBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.zh.chatter.controller.ChatAreaController">
-    <ScrollPane fx:id="messageBoard" hbarPolicy="NEVER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0"
-                prefWidth="650.0">
-        <ListView fx:id="messageArea" prefHeight="400.0" prefWidth="650.0"/>
-    </ScrollPane>
-    <ToolBar fx:id="chatToolBar" nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="650.0">
-        <Button fx:id="clearButton" contentDisplay="CENTER" layoutX="70.0" layoutY="10.0"
-                mnemonicParsing="false" text="清屏" onMouseClicked="#handleClearMessage"/>
-        <Button fx:id="sendButton" alignment="CENTER" mnemonicParsing="false"
-                onMouseClicked="#handleMessageSend" text="发送"/>
-        <Button fx:id="userListButton" alignment="CENTER" layoutX="10.0" layoutY="10.0"
-                mnemonicParsing="false" text="用户列表" onMouseClicked="#showUserList"/>
-        <Button fx:id="fileTransferDialogButton" alignment="CENTER" mnemonicParsing="false"
-                onMouseClicked="#openFileTransferDialog" text="文件发送列表"/>
-    </ToolBar>
-    <ScrollPane fx:id="inputBoard" hbarPolicy="NEVER" prefHeight="140.0" prefWidth="650.0">
-        <TextArea fx:id="inputArea" prefHeight="140.0" prefWidth="650.0" onKeyPressed="#handleShortcutSend"/>
-    </ScrollPane>
-</VBox>
+<?import javafx.scene.control.TabPane?>
+
+<TabPane prefHeight="570" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:id="chat-area">
+    <fx:include source="group-chat-tag.fxml" />
+</TabPane>

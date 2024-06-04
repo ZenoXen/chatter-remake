@@ -131,7 +131,7 @@ public class UdpServer implements Runnable {
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         InetAddress address = networkInterfaceHolder.getMulticastAddress().getAddress();
         ChatMessageBO chatMessageBO = new ChatMessageBO(currentUser, message, LocalDateTime.now());
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.CHAT_MESSAGE.getCode(), null, address, port, objectMapper.writeValueAsString(chatMessageBO));
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.GROUP_CHAT_MESSAGE.getCode(), null, address, port, objectMapper.writeValueAsString(chatMessageBO));
         channel.writeAndFlush(udpCommonDataDTO);
         log.debug("发送聊天消息： {} {}", networkInterfaceHolder.getSelectedNetworkInterface().getDisplayName(), address.getHostAddress());
     }

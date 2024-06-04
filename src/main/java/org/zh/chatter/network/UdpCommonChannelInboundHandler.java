@@ -42,8 +42,9 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         UdpCommonDataTypeEnum typeEnum = UdpCommonDataTypeEnum.getByCode(udpCommonDataDTO.getType());
         switch (typeEnum) {
             case HEARTBEAT -> this.handleHeartbeat(ctx, udpCommonDataDTO);
-            case CHAT_MESSAGE -> this.handleChatMessage(ctx, udpCommonDataDTO);
+            case GROUP_CHAT_MESSAGE -> this.handleGroupChatMessage(ctx, udpCommonDataDTO);
             case OFFLINE_NOTIFICATION -> this.handleOfflineNotification(ctx, udpCommonDataDTO);
+            case PRIVATE_CHAT_MESSAGE -> this.handlePrivateChatMessage(ctx, udpCommonDataDTO);
             default -> log.error("接收到未知类型的udp消息：{}", udpCommonDataDTO);
         }
     }
@@ -75,9 +76,17 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         notificationManager.addNotification(new NotificationVO(NotificationTypeEnum.USER_LEFT, LocalDateTime.now(), removed.getUser().getUsername()));
     }
 
-    private void handleChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
+    private void handleGroupChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
         ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
         NodeUserBO user = chatMessageBO.getUser();
+        this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
+        chatMessageManager.addChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
+    }
+
+    private void handlePrivateChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
+        ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
+        NodeUserBO user = chatMessageBO.getUser();
+        //todo 单独做一个私聊窗口
         this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
         chatMessageManager.addChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
