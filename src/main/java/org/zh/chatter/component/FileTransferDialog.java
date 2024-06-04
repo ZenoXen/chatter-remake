@@ -1,7 +1,6 @@
 package org.zh.chatter.component;
 
 import cn.hutool.core.collection.CollectionUtil;
-import io.netty.channel.Channel;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -10,14 +9,6 @@ import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import org.zh.chatter.enums.FileTaskStatusEnum;
-import org.zh.chatter.enums.TcpCmdTypeEnum;
-import org.zh.chatter.manager.CurrentUserInfoHolder;
-import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.manager.LockManager;
-import org.zh.chatter.model.bo.FileChunkFetchRequestBO;
-import org.zh.chatter.model.bo.FileTaskBO;
-import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
-import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.FileTaskCellVO;
 
 import java.time.LocalDateTime;
@@ -37,26 +28,20 @@ public class FileTransferDialog extends Dialog<Void> {
 
     private final int height;
     private final int width;
-    private final FileTaskManager fileTaskManager;
-    private final CurrentUserInfoHolder currentUserInfoHolder;
-    private final LockManager lockManager;
 
     public FileTransferDialog(int width,
                               int height,
-                              FileTaskManager fileTaskManager,
-                              CurrentUserInfoHolder currentUserInfoHolder,
-                              LockManager lockManager) {
+                              FileTaskButtonActions fileTaskButtonActions,
+                              ObservableList<FileTaskCellVO> inactiveTasks,
+                              ObservableList<FileTaskCellVO> ongoingTasks) {
         this.setTitle(DIALOG_TITLE);
         this.width = width;
         this.height = height;
-        this.fileTaskManager = fileTaskManager;
-        this.currentUserInfoHolder = currentUserInfoHolder;
-        this.lockManager = lockManager;
-        TableView<FileTaskCellVO> topTaskTable = this.generateTopTaskTable(fileTaskManager.getInactiveTasks());
-        TableView<FileTaskCellVO> bottomTaskTable = this.generateBottomTaskTable(fileTaskManager.getOngoingTasks());
+        TableView<FileTaskCellVO> topTaskTable = this.generateTopTaskTable(inactiveTasks);
+        TableView<FileTaskCellVO> bottomTaskTable = this.generateBottomTaskTable(ongoingTasks, fileTaskButtonActions);
         //非活动状态的任务
-        //活动状态的任务
         VBox topBox = this.generateTopVbox(topTaskTable);
+        //活动状态的任务
         VBox bottomBox = this.generateBottomVbox(bottomTaskTable);
 
         BorderPane borderPane = new BorderPane();
@@ -106,7 +91,7 @@ public class FileTransferDialog extends Dialog<Void> {
         return topBox;
     }
 
-    private TableView<FileTaskCellVO> generateBottomTaskTable(ObservableList<FileTaskCellVO> tasks) {
+    private TableView<FileTaskCellVO> generateBottomTaskTable(ObservableList<FileTaskCellVO> tasks, FileTaskButtonActions fileTaskButtonActions) {
         TableView<FileTaskCellVO> fileTaskTable = new TableView<>();
         fileTaskTable.setItems(tasks);
         fileTaskTable.setPlaceholder(new Label(BOTTOM_TABLE_PLACEHOLDER));
@@ -132,93 +117,15 @@ public class FileTransferDialog extends Dialog<Void> {
         progressCol.setCellValueFactory(cellData -> cellData.getValue().getTransferProgress().asObject());
         progressCol.setCellFactory(ProgressBarTableCell.forTableColumn());
 
-        TableColumn<FileTaskCellVO, Void> suspendCol = new TableColumn<>("操作1");
-        suspendCol.setCellFactory(param -> new TableCell<>() {
-            private final Button suspendButton = new Button("暂停");
+        TableColumn<FileTaskCellVO, Button> suspendCol = new TableColumn<>("操作1");
+        suspendCol.setCellFactory(ActionButtonTableCell.forTableColumn("暂停", fileTaskButtonActions.getSuspendButtonAction(), fileTaskButtonActions.getSuspendButtonShowAction()));
 
-            {
-                suspendButton.setOnAction(event -> {
-                    FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
-                    String taskId = cellVO.getTaskId().get();
-                    lockManager.runWithLock(taskId, () -> {
-                        FileTaskBO task = fileTaskManager.getTask(taskId);
-                        if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
-                            FileTaskStatusEnum oppositeStatus = getOppositeStatus(task.getStatus());
-                            task.setStatus(oppositeStatus);
-                            fileTaskManager.addOrUpdateTask(task);
-                            Channel channel = task.getChannel();
-                            String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
-                            FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
-                            fileTransferStatusChangedNotificationBO.setTargetStatus(oppositeStatus);
-                            channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
-                            if (FileTaskStatusEnum.TRANSFERRING.equals(oppositeStatus)) {
-                                FileChunkFetchRequestBO fileChunkFetchRequestBO = new FileChunkFetchRequestBO();
-                                fileChunkFetchRequestBO.setTimestamp(System.currentTimeMillis());
-                                channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_CHUNK_FETCH_REQUEST, task.getTaskId(), currentUserInfoHolder.getCurrentUser().getId(), fileChunkFetchRequestBO));
-                            }
-                            suspendButton.setText(getStatusButtonText(oppositeStatus));
-                        }
-                    });
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
-                if (empty || !FileTaskStatusEnum.ON_GOING_STATUSES.contains(cellVO.getStatus().get())) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(suspendButton);
-                }
-            }
-        });
-
-        TableColumn<FileTaskCellVO, Void> cancellCol = new TableColumn<>("操作2");
-        cancellCol.setCellFactory(param -> new TableCell<>() {
-            private final Button cancellButton = new Button("取消");
-
-            {
-                cancellButton.setOnAction(event -> {
-                    FileTaskCellVO cellVO = getTableView().getItems().get(getIndex());
-                    String taskId = cellVO.getTaskId().get();
-                    lockManager.runWithLock(taskId, () -> {
-                        FileTaskBO task = fileTaskManager.getTask(taskId);
-                        if (task != null && FileTaskStatusEnum.ON_GOING_STATUSES.contains(task.getStatus())) {
-                            task.setStatus(FileTaskStatusEnum.CANCELLED);
-                            fileTaskManager.addOrUpdateTask(task);
-                            Channel channel = task.getChannel();
-                            String currentUserId = currentUserInfoHolder.getCurrentUser().getId();
-                            FileTransferStatusChangedNotificationBO fileTransferStatusChangedNotificationBO = new FileTransferStatusChangedNotificationBO();
-                            fileTransferStatusChangedNotificationBO.setTargetStatus(FileTaskStatusEnum.CANCELLED);
-                            channel.writeAndFlush(TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION, taskId, currentUserId, fileTransferStatusChangedNotificationBO));
-                        }
-                    });
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(cancellButton);
-                }
-            }
-        });
+        TableColumn<FileTaskCellVO, Button> cancelCol = new TableColumn<>("操作2");
+        cancelCol.setCellFactory(ActionButtonTableCell.forTableColumn("取消", fileTaskButtonActions.getCancelButtonAction(), null));
 
         ObservableList<TableColumn<FileTaskCellVO, ?>> columns = fileTaskTable.getColumns();
-        columns.addAll(CollectionUtil.newArrayList(idColOngoing, fileNameColOngoing, senderColOngoing, sendTimeColOngoing, fileSizeColOngoing, statusColOngoing, progressCol, cancellCol));
+        columns.addAll(CollectionUtil.newArrayList(idColOngoing, fileNameColOngoing, senderColOngoing, sendTimeColOngoing, fileSizeColOngoing, statusColOngoing, progressCol, cancelCol));
         return fileTaskTable;
-    }
-
-    private FileTaskStatusEnum getOppositeStatus(FileTaskStatusEnum status) {
-        return FileTaskStatusEnum.TRANSFERRING.equals(status) ? FileTaskStatusEnum.SUSPENDED : FileTaskStatusEnum.TRANSFERRING;
-    }
-
-    private String getStatusButtonText(FileTaskStatusEnum status) {
-        return FileTaskStatusEnum.TRANSFERRING.equals(status) ? "暂停" : "继续";
     }
 
     private VBox generateBottomVbox(TableView<FileTaskCellVO> fileTaskTable) {

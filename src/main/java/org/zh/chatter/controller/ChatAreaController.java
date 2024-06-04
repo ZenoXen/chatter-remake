@@ -9,6 +9,7 @@ import javafx.scene.input.*;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
+import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.FileTransferDialog;
 import org.zh.chatter.component.UserListDialog;
 import org.zh.chatter.manager.*;
@@ -45,6 +46,8 @@ public class ChatAreaController implements Initializable {
     private TcpClient tcpClient;
     @Resource
     private LockManager lockManager;
+    @Resource
+    private FileTaskButtonActions fileTaskButtonActions;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -79,12 +82,12 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), tcpClient);
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions);
         dialog.show();
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskManager, currentUserInfoHolder, lockManager);
+        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FIEL_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
         dialog.show();
     }
 }
