@@ -11,8 +11,6 @@ import javafx.scene.layout.VBox;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.model.vo.FileTaskCellVO;
 
-import java.time.LocalDateTime;
-
 public class FileTransferDialog extends Dialog<Void> {
 
     private static final String CLOSE_BUTTON_TEXT = "关闭";
@@ -68,11 +66,11 @@ public class FileTransferDialog extends Dialog<Void> {
         TableColumn<FileTaskCellVO, String> senderCol = new TableColumn<>("发送者");
         senderCol.setCellValueFactory(cellData -> cellData.getValue().getSenderName());
 
-        TableColumn<FileTaskCellVO, LocalDateTime> sendTimeCol = new TableColumn<>("发送时间");
+        TableColumn<FileTaskCellVO, String> sendTimeCol = new TableColumn<>("发送时间");
         sendTimeCol.setCellValueFactory(cellData -> cellData.getValue().getSendTime());
 
-        TableColumn<FileTaskCellVO, Long> fileSizeCol = new TableColumn<>("文件大小");
-        fileSizeCol.setCellValueFactory(cellData -> cellData.getValue().getFileSize().asObject());
+        TableColumn<FileTaskCellVO, String> fileSizeCol = new TableColumn<>("文件大小");
+        fileSizeCol.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
 
         TableColumn<FileTaskCellVO, FileTaskStatusEnum> statusCol = new TableColumn<>("任务状态");
         statusCol.setCellValueFactory(cellData -> cellData.getValue().getStatus());
@@ -104,11 +102,11 @@ public class FileTransferDialog extends Dialog<Void> {
         TableColumn<FileTaskCellVO, String> senderColOngoing = new TableColumn<>("发送者");
         senderColOngoing.setCellValueFactory(cellData -> cellData.getValue().getSenderName());
 
-        TableColumn<FileTaskCellVO, LocalDateTime> sendTimeColOngoing = new TableColumn<>("发送时间");
+        TableColumn<FileTaskCellVO, String> sendTimeColOngoing = new TableColumn<>("发送时间");
         sendTimeColOngoing.setCellValueFactory(cellData -> cellData.getValue().getSendTime());
 
-        TableColumn<FileTaskCellVO, Long> fileSizeColOngoing = new TableColumn<>("文件大小");
-        fileSizeColOngoing.setCellValueFactory(cellData -> cellData.getValue().getFileSize().asObject());
+        TableColumn<FileTaskCellVO, String> fileSizeColOngoing = new TableColumn<>("文件大小");
+        fileSizeColOngoing.setCellValueFactory(cellData -> cellData.getValue().getFileSize());
 
         TableColumn<FileTaskCellVO, FileTaskStatusEnum> statusColOngoing = new TableColumn<>("任务状态");
         statusColOngoing.setCellValueFactory(cellData -> cellData.getValue().getStatus());

@@ -1,6 +1,7 @@
 package org.zh.chatter.model.vo;
 
-import cn.hutool.core.date.LocalDateTimeUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -12,8 +13,6 @@ import lombok.NoArgsConstructor;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.model.bo.FileTaskBO;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,21 +21,21 @@ public class FileTaskCellVO {
     private Boolean isMySelf;
     private SimpleStringProperty taskId;
     private SimpleStringProperty fileName;
-    private SimpleLongProperty fileSize;
+    private SimpleStringProperty fileSize;
     private SimpleLongProperty transferredSize;
     private SimpleDoubleProperty transferProgress;
     private SimpleStringProperty senderId;
     private SimpleStringProperty senderName;
-    private SimpleObjectProperty<LocalDateTime> sendTime;
+    private SimpleStringProperty sendTime;
     private SimpleObjectProperty<FileTaskStatusEnum> status;
 
     public static FileTaskCellVO convertFromFileTaskBO(FileTaskBO fileTaskBO) {
         return FileTaskCellVO.builder()
                 .fileName(new SimpleStringProperty(fileTaskBO.getFileName()))
-                .fileSize(new SimpleLongProperty(fileTaskBO.getFileSize()))
+                .fileSize(new SimpleStringProperty(FileUtil.readableFileSize(fileTaskBO.getFileSize())))
                 .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))
                 .senderName(new SimpleStringProperty(fileTaskBO.getSenderName()))
-                .sendTime(new SimpleObjectProperty<>(LocalDateTimeUtil.of(fileTaskBO.getSendTime())))
+                .sendTime(new SimpleStringProperty(DateUtil.formatDate(DateUtil.date(fileTaskBO.getSendTime()))))
                 .status(new SimpleObjectProperty<>(fileTaskBO.getStatus()))
                 .transferredSize(new SimpleLongProperty(fileTaskBO.getTransferredSize()))
                 .transferProgress(new SimpleDoubleProperty(fileTaskBO.getTransferProgress()))
