@@ -57,7 +57,9 @@ public class UserListDialog extends Dialog<Void> {
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty) {
+                UserVO userVO = getTableView().getItems().get(getIndex());
+                Boolean isMySelf = userVO.getIsMySelf();
+                if (empty || isMySelf) {
                     setGraphic(null);
                 } else {
                     setGraphic(sendFileButton);

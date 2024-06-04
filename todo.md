@@ -8,4 +8,3 @@
 
 # 已知bug
 1. 发送文件，最后一个文件块传输完成后，接收方出现npe，具体见stacktrace
-2. ByteBuf内存泄漏
