@@ -13,13 +13,15 @@ public class ActionButtonTableCell<S> extends TableCell<S, Button> {
     private final Function<S, Boolean> showFunction;
 
     public ActionButtonTableCell(String label, BiFunction<S, Button, S> function, Function<S, Boolean> showFunction) {
+        this.getStyleClass().add("action-button-table-cell");
         this.actionButton = new Button(label);
         this.actionButton.setOnAction((e) -> function.apply(getCurrentItem(), actionButton));
         this.showFunction = showFunction;
+        this.actionButton.setMaxWidth(Double.MAX_VALUE);
     }
 
     private S getCurrentItem() {
-        return getTableView().getItems().get(getIndex());
+        return getTableRow().getItem();
     }
 
     public static <S> Callback<TableColumn<S, Button>, TableCell<S, Button>> forTableColumn(String label, BiFunction<S, Button, S> function, Function<S, Boolean> showFunction) {
@@ -30,7 +32,7 @@ public class ActionButtonTableCell<S> extends TableCell<S, Button> {
     public void updateItem(Button item, boolean empty) {
         super.updateItem(item, empty);
         S currentItem = this.getCurrentItem();
-        if (empty || (showFunction != null && showFunction.apply(currentItem))) {
+        if (empty || (showFunction != null && !showFunction.apply(currentItem))) {
             setGraphic(null);
         } else {
             setGraphic(actionButton);
