@@ -7,7 +7,7 @@
     <VBox>
         <ScrollPane hbarPolicy="NEVER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0"
                     prefWidth="650.0">
-            <ListView prefHeight="400.0" prefWidth="650.0"/>
+            <ListView prefHeight="400.0" prefWidth="650.0" styleClass="message-list-view"/>
         </ScrollPane>
         <ToolBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="650.0">
             <Button contentDisplay="CENTER" layoutX="70.0" layoutY="10.0"
@@ -18,7 +18,7 @@
             <Button alignment="CENTER" mnemonicParsing="false" text="文件发送列表" styleClass="file-list-btn"/>
         </ToolBar>
         <ScrollPane hbarPolicy="NEVER" prefHeight="120.0" prefWidth="650.0">
-            <TextArea prefHeight="120.0" prefWidth="650.0"/>
+            <TextArea prefHeight="120.0" prefWidth="650.0" styleClass="chat-input-text-area"/>
         </ScrollPane>
     </VBox>
 </Tab>

@@ -8,17 +8,20 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.input.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
-import org.zh.chatter.component.FileTransferDialog;
+import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.component.UserListDialog;
 import org.zh.chatter.manager.*;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.network.UdpServer;
+import org.zh.chatter.util.Constants;
 
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -27,9 +30,6 @@ import java.util.ResourceBundle;
 //todo 帮助文档
 @Controller
 public class ChatAreaController implements Initializable {
-    private static final KeyCodeCombination SEND_MESSAGE_SHORTCUT = new KeyCodeCombination(KeyCode.ENTER, KeyCombination.CONTROL_DOWN);
-    public static final int FILE_TRANSFER_DIALOG_WIDTH = 300;
-    public static final int FILE_TRANSFER_DIALOG_HEIGHT = 400;
     @FXML
     private TextArea groupInputArea;
     @FXML
@@ -50,6 +50,8 @@ public class ChatAreaController implements Initializable {
     private FileTaskButtonActions fileTaskButtonActions;
     @Resource
     private PrivateChatTabManager privateChatTabManager;
+    @Autowired
+    private PrivateChatButtonActions privateChatButtonActions;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -74,7 +76,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void handleShortcutSend(KeyEvent keyEvent) throws Exception {
-        if (SEND_MESSAGE_SHORTCUT.match(keyEvent)) {
+        if (Constants.SEND_MESSAGE_SHORTCUT.match(keyEvent)) {
             this.handleGroupMessageSend();
         }
     }
@@ -84,13 +86,12 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions, chatArea);
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions, privateChatButtonActions, chatArea);
         dialog.show();
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FILE_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
-        dialog.show();
+        fileTaskButtonActions.openFileTransferDialog(mouseEvent);
     }
 
     public void handleClosePrivateChatTab(Event event) {

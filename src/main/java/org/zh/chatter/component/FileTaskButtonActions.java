@@ -3,8 +3,7 @@ package org.zh.chatter.component;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import javafx.scene.control.Button;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
@@ -13,7 +12,6 @@ import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.LockManager;
-import org.zh.chatter.manager.PrivateChatTabManager;
 import org.zh.chatter.model.bo.FileChunkFetchRequestBO;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
@@ -37,8 +35,6 @@ public class FileTaskButtonActions {
     private LockManager lockManager;
     @Resource
     private TcpClient tcpClient;
-    @Resource
-    private PrivateChatTabManager privateChatTabManager;
 
     @Getter
     private BiFunction<FileTaskCellVO, Button, FileTaskCellVO> suspendButtonAction = (cellVO, button) -> {
@@ -98,25 +94,6 @@ public class FileTaskButtonActions {
         return userVO;
     };
 
-    public BiFunction<UserVO, Button, UserVO> getPrivateChatButtonAction(TabPane tabPane) {
-        return (userVO, button) -> {
-            Tab tab = privateChatTabManager.getTab(userVO.getId());
-            if (tab == null) {
-                try {
-                    //将新tab添加到tab条上
-                    tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
-                    tabPane.getTabs().add(tab);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            tab.getProperties().put(Constants.USER_VO, userVO);
-            //选定该tab
-            tabPane.getSelectionModel().select(tab);
-            return userVO;
-        };
-    }
-
     @Getter
     private Function<UserVO, Boolean> isMySelfShowAction = userVO -> !userVO.getIsMySelf();
 
@@ -126,5 +103,10 @@ public class FileTaskButtonActions {
 
     private String getStatusButtonText(FileTaskStatusEnum status) {
         return FileTaskStatusEnum.TRANSFERRING.equals(status) ? "暂停" : "继续";
+    }
+
+    public void openFileTransferDialog(MouseEvent mouseEvent) {
+        FileTransferDialog dialog = new FileTransferDialog(Constants.FILE_TRANSFER_DIALOG_WIDTH, Constants.FILE_TRANSFER_DIALOG_HEIGHT, this, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
+        dialog.show();
     }
 }

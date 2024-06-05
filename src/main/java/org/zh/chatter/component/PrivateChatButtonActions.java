@@ -2,13 +2,31 @@ package org.zh.chatter.component;
 
 import jakarta.annotation.Resource;
 import javafx.event.EventHandler;
-import javafx.scene.control.Button;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import lombok.Getter;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
+import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.PrivateChatTabManager;
+import org.zh.chatter.model.bo.NodeUserBO;
+import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.UserVO;
+import org.zh.chatter.network.TcpClient;
+import org.zh.chatter.network.UdpServer;
 import org.zh.chatter.util.Constants;
+import org.zh.chatter.util.NodeUtil;
+
+import java.io.File;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.BiFunction;
 
 
 @Component
@@ -16,7 +34,22 @@ public class PrivateChatButtonActions {
     @Resource
     private ChatMessageManager chatMessageManager;
     @Resource
+    private UdpServer udpServer;
+    @Resource
+    private CurrentUserInfoHolder currentUserInfoHolder;
+    @Resource
+    private TcpClient tcpClient;
+    @Resource
+    private PrivateChatTabManager privateChatTabManager;
+    @Resource
     private FileTaskButtonActions fileTaskButtonActions;
+
+    private static final String CLEAR_BTN_CLASS = "clear-btn";
+    private static final String SEND_BTN_CLASS = "send-btn";
+    private static final String SEND_FILE_BTN_CLASS = "send-file-btn";
+    private static final String FILE_LIST_BTN_CLASS = "file-list-btn";
+    private static final String CHAT_INPUT_TEXT_AREA_CLASS = "chat-input-text-area";
+    private static final String MESSAGE_LIST_VIEW_CLASS = "message-list-view";
 
     @Getter
     private EventHandler<MouseEvent> onClearButtonClicked = e -> {
@@ -29,6 +62,102 @@ public class PrivateChatButtonActions {
     private EventHandler<MouseEvent> onSendFileButtonClicked = e -> {
         Button button = (Button) e.getTarget();
         UserVO userVO = (UserVO) button.getProperties().get(Constants.USER_VO);
-        fileTaskButtonActions.getSendFileButtonAction().apply(userVO, button);
+        //弹出windows文件选框
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle(Constants.SELECT_FILE_TITLE);
+        File chosenFile = fileChooser.showOpenDialog(button.getScene().getWindow());
+        if (chosenFile != null) {
+            tcpClient.sendFileTransferRequest(userVO, chosenFile);
+        }
     };
+
+    public EventHandler<MouseEvent> getOnSendButtonClicked(TextArea textArea) {
+        return e -> {
+            Button button = (Button) e.getTarget();
+            UserVO userVO = (UserVO) button.getProperties().get(Constants.USER_VO);
+            try {
+                this.handlePrivateMessageSend(textArea, userVO);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        };
+    }
+
+    @Getter
+    private EventHandler<KeyEvent> onShortcutKeyPressed = e -> {
+        TextArea textArea = (TextArea) e.getTarget();
+        UserVO userVO = (UserVO) textArea.getProperties().get(Constants.USER_VO);
+        if (Constants.SEND_MESSAGE_SHORTCUT.match(e)) {
+            try {
+                this.handlePrivateMessageSend(textArea, userVO);
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    };
+
+    public void handlePrivateMessageSend(TextArea textArea, UserVO userVO) throws Exception {
+        //清除输入框文本，并发送文本
+        String text = textArea.getText();
+        String tabId = textArea.getProperties().get(Constants.TAB_ID).toString();
+        if (Strings.isEmpty(text)) {
+            return;
+        }
+        textArea.clear();
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
+        udpServer.sendChatMessage(text, userVO.getAddress(), UdpCommonDataTypeEnum.PRIVATE_CHAT_MESSAGE);
+        this.showChatMessage(tabId, text, currentUser.getId(), currentUser.getUsername());
+    }
+
+    public void showChatMessage(String tabId, String text, String userId, String username) {
+        chatMessageManager.addPrivateChatMessage(tabId, new ChatMessageVO(userId, username, text, LocalDateTime.now()));
+    }
+
+    public BiFunction<UserVO, Button, UserVO> getPrivateChatButtonAction(TabPane tabPane) {
+        return (userVO, button) -> {
+            Tab tab = privateChatTabManager.getTab(userVO.getId());
+            if (tab == null) {
+                try {
+                    //将新tab添加到tab条上
+                    tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
+                    this.setChildrenPropertiesAndActions(tab);
+                    tabPane.getTabs().add(tab);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            tab.getProperties().put(Constants.USER_VO, userVO);
+            //选定该tab
+            tabPane.getSelectionModel().select(tab);
+            return userVO;
+        };
+    }
+
+    private void setChildrenPropertiesAndActions(Tab newTab) {
+        String tabId = newTab.getId();
+        VBox vbox = (VBox) newTab.getContent();
+        List<Node> nodes = NodeUtil.getNestedNodesByStyleClass(vbox);
+        nodes.forEach(n -> this.doSetNodeProperties(n, tabId, (UserVO) newTab.getProperties().get(Constants.USER_VO)));
+        //将ObservableList关联到ListView上
+        ListView<ChatMessageVO> listView = (ListView<ChatMessageVO>) NodeUtil.findFirstNodeByStyleClass(nodes, MESSAGE_LIST_VIEW_CLASS, Node.class);
+        listView.setItems(chatMessageManager.initPrivateChatMessageList(tabId));
+        listView.setCellFactory(c -> new ChatMessageCell());
+        //将操作关联到TextArea上
+        TextArea textArea = NodeUtil.findFirstNodeByStyleClass(nodes, CHAT_INPUT_TEXT_AREA_CLASS, TextArea.class);
+        textArea.setOnKeyPressed(this.getOnShortcutKeyPressed());
+        //获取内部的Button，关联上所有操作
+        Button clearButton = NodeUtil.findFirstNodeByStyleClass(nodes, CLEAR_BTN_CLASS, Button.class);
+        clearButton.setOnMouseClicked(this.getOnClearButtonClicked());
+        Button sendButton = NodeUtil.findFirstNodeByStyleClass(nodes, SEND_BTN_CLASS, Button.class);
+        sendButton.setOnMouseClicked(this.getOnSendButtonClicked(textArea));
+        Button sendFileButton = NodeUtil.findFirstNodeByStyleClass(nodes, SEND_FILE_BTN_CLASS, Button.class);
+        sendFileButton.setOnMouseClicked(this.getOnSendFileButtonClicked());
+        Button fileListButton = NodeUtil.findFirstNodeByStyleClass(nodes, FILE_LIST_BTN_CLASS, Button.class);
+        fileListButton.setOnMouseClicked(fileTaskButtonActions::openFileTransferDialog);
+    }
+
+    private void doSetNodeProperties(Node node, String tabId, UserVO userVO) {
+        node.getProperties().put(Constants.TAB_ID, tabId);
+        node.getProperties().put(Constants.USER_VO, userVO);
+    }
 }

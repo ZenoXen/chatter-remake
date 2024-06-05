@@ -25,7 +25,7 @@ public class UserListDialog extends Dialog<Void> {
     private static final int NAME_COLUMN_MAX_WIDTH = 150;
     private static final int HEIGHT = 500;
 
-    public UserListDialog(List<UserVO> users, FileTaskButtonActions fileTaskButtonActions, TabPane tabPane) {
+    public UserListDialog(List<UserVO> users, FileTaskButtonActions fileTaskButtonActions, PrivateChatButtonActions privateChatButtonActions, TabPane tabPane) {
         this.setTitle(DIALOG_TITLE);
         TableView<UserVO> tableView = new TableView<>();
         TableColumn<UserVO, String> idColumn = new TableColumn<>(ID_COLUMN_NAME);
@@ -37,7 +37,7 @@ public class UserListDialog extends Dialog<Void> {
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         idColumn.setMaxWidth(ID_COLUMN_MAX_WIDTH);
         sendFileColumn.setCellFactory(ActionButtonTableCell.forTableColumn(SEND_FILE_BUTTON_TEXT, fileTaskButtonActions.getSendFileButtonAction(), fileTaskButtonActions.getIsMySelfShowAction()));
-        privateChatColumn.setCellFactory(ActionButtonTableCell.forTableColumn(PRIVATE_CHAT_BUTTON_TEXT, fileTaskButtonActions.getPrivateChatButtonAction(tabPane), null));
+        privateChatColumn.setCellFactory(ActionButtonTableCell.forTableColumn(PRIVATE_CHAT_BUTTON_TEXT, privateChatButtonActions.getPrivateChatButtonAction(tabPane), null));
         ObservableList<TableColumn<UserVO, ?>> tableColumns = tableView.getColumns();
         tableColumns.addAll(CollectionUtil.newArrayList(idColumn, nameColumn, sendFileColumn, privateChatColumn));
         tableView.setItems(FXCollections.observableList(users));
