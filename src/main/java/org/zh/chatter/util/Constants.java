@@ -9,4 +9,8 @@ public class Constants {
     public static final int LENGTH_FIELD_OFFSET = 74;
     public static final int LENGTH_FIELD_LENGTH = 8;
     public static final int LENGTH_FIELD_ADJUSTMENT = 0;
+    public static final String TAB_ID = "tabId";
+    public static final String TARGET_USER_ID = "targetUserId";
+    public static final String SELECT_FILE_TITLE = "选择要发送的文件";
+    public static final String USER_VO = "userVO";
 }

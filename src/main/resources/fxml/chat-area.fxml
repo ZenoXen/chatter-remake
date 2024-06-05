@@ -2,6 +2,6 @@
 
 <?import javafx.scene.control.TabPane?>
 
-<TabPane prefHeight="570" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:id="chat-area">
-    <fx:include source="group-chat-tag.fxml" />
+<TabPane prefHeight="570" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:id="chatArea" fx:controller="org.zh.chatter.controller.ChatAreaController">
+    <fx:include source="group-chat-tab.fxml" />
 </TabPane>

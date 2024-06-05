@@ -1,9 +1,12 @@
 package org.zh.chatter.controller;
 
 import jakarta.annotation.Resource;
+import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.*;
 import org.apache.logging.log4j.util.Strings;
@@ -12,10 +15,7 @@ import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.FileTransferDialog;
 import org.zh.chatter.component.UserListDialog;
-import org.zh.chatter.manager.ChatMessageManager;
-import org.zh.chatter.manager.CurrentUserInfoHolder;
-import org.zh.chatter.manager.FileTaskManager;
-import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.manager.*;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.network.UdpServer;
@@ -34,6 +34,8 @@ public class ChatAreaController implements Initializable {
     private TextArea groupInputArea;
     @FXML
     private ListView<ChatMessageVO> groupMessageArea;
+    @FXML
+    private TabPane chatArea;
     @Resource
     private NodeManager nodeManager;
     @Resource
@@ -46,10 +48,12 @@ public class ChatAreaController implements Initializable {
     private FileTaskManager fileTaskManager;
     @Resource
     private FileTaskButtonActions fileTaskButtonActions;
+    @Resource
+    private PrivateChatTabManager privateChatTabManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        groupMessageArea.setItems(chatMessageManager.getChatMessageList());
+        groupMessageArea.setItems(chatMessageManager.getGroupChatMessageList());
         groupMessageArea.setCellFactory(c -> new ChatMessageCell());
     }
 
@@ -66,7 +70,7 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showChatMessage(String text, String userId, String username) {
-        chatMessageManager.addChatMessage(new ChatMessageVO(userId, username, text, LocalDateTime.now()));
+        chatMessageManager.addGroupChatMessage(new ChatMessageVO(userId, username, text, LocalDateTime.now()));
     }
 
     public void handleShortcutSend(KeyEvent keyEvent) throws Exception {
@@ -76,16 +80,21 @@ public class ChatAreaController implements Initializable {
     }
 
     public void handleClearGroupMessage(MouseEvent mouseEvent) {
-        chatMessageManager.clearChatMessage();
+        chatMessageManager.clearGroupChatMessage();
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions);
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions, chatArea);
         dialog.show();
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
         FileTransferDialog dialog = new FileTransferDialog(FILE_TRANSFER_DIALOG_WIDTH, FILE_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
         dialog.show();
+    }
+
+    public void handleClosePrivateChatTab(Event event) {
+        Tab tab = (Tab) event.getTarget();
+        privateChatTabManager.removeTab(tab.getId());
     }
 }

@@ -1,8 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.VBox?>
 <Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-     fx:controller="org.zh.chatter.controller.ChatAreaController"
-     closable="false" text="私聊">
+     fx:controller="org.zh.chatter.controller.ChatAreaController" text="私聊" onClosed="#handleClosePrivateChatTab">
     <VBox>
         <ScrollPane hbarPolicy="NEVER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0"
                     prefWidth="650.0">
@@ -10,11 +11,11 @@
         </ScrollPane>
         <ToolBar nodeOrientation="LEFT_TO_RIGHT" prefHeight="30.0" prefWidth="650.0">
             <Button contentDisplay="CENTER" layoutX="70.0" layoutY="10.0"
-                    mnemonicParsing="false" text="清屏"/>
-            <Button alignment="CENTER" mnemonicParsing="false" text="发送"/>
+                    mnemonicParsing="false" text="清屏" styleClass="clear-btn"/>
+            <Button alignment="CENTER" mnemonicParsing="false" text="发送" styleClass="send-btn"/>
             <Button alignment="CENTER" layoutX="10.0" layoutY="10.0"
-                    mnemonicParsing="false" text="发送文件"/>
-            <Button alignment="CENTER" mnemonicParsing="false" text="文件发送列表"/>
+                    mnemonicParsing="false" text="发送文件" styleClass="send-file-btn"/>
+            <Button alignment="CENTER" mnemonicParsing="false" text="文件发送列表" styleClass="file-list-btn"/>
         </ToolBar>
         <ScrollPane hbarPolicy="NEVER" prefHeight="120.0" prefWidth="650.0">
             <TextArea prefHeight="120.0" prefWidth="650.0"/>

@@ -80,7 +80,7 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
         NodeUserBO user = chatMessageBO.getUser();
         this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
-        chatMessageManager.addChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
+        chatMessageManager.addGroupChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
 
     private void handlePrivateChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
@@ -88,6 +88,6 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         NodeUserBO user = chatMessageBO.getUser();
         //todo 单独做一个私聊窗口
         this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
-        chatMessageManager.addChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
+        chatMessageManager.addGroupChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
 }
