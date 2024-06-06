@@ -19,6 +19,7 @@ import org.zh.chatter.manager.TcpConnectionManager;
 import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferRequestBO;
 import org.zh.chatter.model.bo.NodeUserBO;
+import org.zh.chatter.model.bo.RemotePrivateChatUserInfoExchangeBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.util.Constants;
@@ -116,5 +117,17 @@ public class TcpClient {
         TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO);
         channel.writeAndFlush(tcpCommonDataDTO);
         log.info("发送文件请求到{}：{}", userVO.getAddress(), tcpCommonDataDTO);
+    }
+
+    public void sendRemotePrivateChatUserInfoExchangeRequest(InetAddress address) {
+        Channel channel = this.connectHost(address);
+        String sessionId = IdUtil.genId();
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
+        RemotePrivateChatUserInfoExchangeBO requestBO = new RemotePrivateChatUserInfoExchangeBO();
+        requestBO.setId(currentUser.getId());
+        requestBO.setUsername(currentUser.getUsername());
+        TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_REQUEST, sessionId, currentUser.getId(), requestBO);
+        channel.writeAndFlush(tcpCommonDataDTO);
+        log.info("发送私聊用户信息到{}：{}", address, tcpCommonDataDTO);
     }
 }

@@ -34,7 +34,15 @@ public enum TcpCmdTypeEnum {
     /**
      * 文件传输状态变更通知
      */
-    FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION((byte) 0x6, FileTransferStatusChangedNotificationBO.class, FileTransferStatusChangedNotificationCmdHandler.class);
+    FILE_TRANSFER_STATUS_CHANGED_NOTIFICATION((byte) 0x6, FileTransferStatusChangedNotificationBO.class, FileTransferStatusChangedNotificationCmdHandler.class),
+    /**
+     * 私聊信交换请求
+     */
+    REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_REQUEST((byte) 0x7, RemotePrivateChatUserInfoExchangeBO.class, RemotePrivateChatUserInfoExchangeRequestCmdHandler.class),
+    /**
+     * 私聊信交换响应
+     */
+    REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_RESPONSE((byte) 0x8, RemotePrivateChatUserInfoExchangeBO.class, RemotePrivateChatUserInfoExchangeResponseCmdHandler.class);
 
     private final byte code;
     private final Class<? extends Serializable> payloadClass;

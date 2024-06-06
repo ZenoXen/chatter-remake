@@ -8,6 +8,7 @@
     <Menu mnemonicParsing="false" text="操作">
         <MenuItem fx:id="changeNameMenuItem" mnemonicParsing="false" text="修改昵称" onAction="#showChangeNamePopup"/>
         <MenuItem fx:id="changeNetworkInterfaceMenuItem" mnemonicParsing="false" text="更换聊天网卡" onAction="#showChangeNetworkInterfacePopup"/>
+        <MenuItem fx:id="openRemotePrivateChatMenuItem" mnemonicParsing="false" text="远程聊天" onAction="#openRemotePrivateChat"/>
         <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="退出" onAction="#handleExit"/>
     </Menu>
     <Menu mnemonicParsing="false" text="其他">

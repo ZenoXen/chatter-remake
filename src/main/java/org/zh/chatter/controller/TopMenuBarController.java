@@ -9,15 +9,21 @@ import javafx.stage.Stage;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
+import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.NetworkInterfaceHolder;
+import org.zh.chatter.manager.PrivateChatTabManager;
 import org.zh.chatter.model.bo.NetworkInterfaceBO;
+import org.zh.chatter.network.TcpClient;
 import org.zh.chatter.network.UdpServer;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Controller
@@ -29,7 +35,9 @@ public class TopMenuBarController {
     private static final String INPUT_INVALID_TITLE = "输入有误";
     private static final String INPUT_INVALID_CONTENT_TEXT = "输入不能为空";
     private static final String CHANGE_NETWORK_INTERFACE_DIALOG_TITLE = "更换聊天网卡";
+    private static final String OPEN_REMOTE_PRIVATE_CHAT_DIALOG_TITLE = "连接远程私聊";
     private static final String CHANGE_NETWORK_INTERFACE_HEADER_TEXT = "请从下列网卡中选择你的聊天网卡";
+    private static final String OPEN_REMOTE_PRIVATE_CHAT_HEADER_TEXT = "请输入连接地址";
     @FXML
     private MenuBar topMenuBar;
 
@@ -41,6 +49,15 @@ public class TopMenuBarController {
 
     @Resource
     private UdpServer udpServer;
+
+    @Resource
+    private PrivateChatButtonActions privateChatButtonActions;
+
+    @Resource
+    private PrivateChatTabManager privateChatTabManager;
+
+    @Resource
+    private TcpClient tcpClient;
 
     public void handleExit(ActionEvent actionEvent) {
         //退出
@@ -95,6 +112,23 @@ public class TopMenuBarController {
                 udpServer.changeNetworkInterface(networkInterfaceBO.getNetworkInterface());
             }
             return networkInterfaceBO;
+        });
+    }
+
+    public void openRemotePrivateChat(ActionEvent actionEvent) {
+        TextInputDialog addressInputDialog = new TextInputDialog();
+        addressInputDialog.setTitle(OPEN_REMOTE_PRIVATE_CHAT_DIALOG_TITLE);
+        addressInputDialog.setHeaderText(OPEN_REMOTE_PRIVATE_CHAT_HEADER_TEXT);
+        addressInputDialog.setContentText(null);
+        Optional<String> inputAddress = addressInputDialog.showAndWait();
+        inputAddress.ifPresent(addr -> {
+            InetAddress inetAddress;
+            try {
+                inetAddress = InetAddress.getByName(addr);
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+            tcpClient.sendRemotePrivateChatUserInfoExchangeRequest(inetAddress);
         });
     }
 }

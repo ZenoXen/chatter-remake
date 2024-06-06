@@ -95,7 +95,6 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
         NodeUserBO user = chatMessageBO.getUser();
         InetAddress fromAddress = udpCommonDataDTO.getFromAddress();
-        this.doHandleHeartBeat(user, fromAddress);
         Tab tab = privateChatButtonActions.getOrInitPrivateChatTab(privateChatTabManager.getChatArea(), new UserVO(user.getId(), user.getUsername(), fromAddress, false));
         chatMessageManager.addPrivateChatMessage(tab.getId(), new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
