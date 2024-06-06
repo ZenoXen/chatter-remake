@@ -11,7 +11,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
@@ -32,7 +31,7 @@ import java.util.ResourceBundle;
 
 //todo 帮助文档
 @Controller
-public class ChatAreaController implements Initializable, InitializingBean {
+public class ChatAreaController implements Initializable {
     @FXML
     private TextArea groupInputArea;
     @FXML
@@ -58,10 +57,6 @@ public class ChatAreaController implements Initializable, InitializingBean {
     public void initialize(URL url, ResourceBundle rb) {
         groupMessageArea.setItems(chatMessageManager.getGroupChatMessageList());
         groupMessageArea.setCellFactory(c -> new ChatMessageCell());
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
         privateChatTabManager.setChatArea(chatArea);
     }
 
