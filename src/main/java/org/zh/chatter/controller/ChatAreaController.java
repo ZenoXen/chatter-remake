@@ -101,7 +101,7 @@ public class ChatAreaController implements Initializable, InitializingBean {
     }
 
     public void handleClosePrivateChatTab(Event event) {
-        Tab tab = (Tab) event.getTarget();
+        Tab tab = (Tab) event.getSource();
         privateChatTabManager.removeTab(tab.getId());
     }
 }

@@ -54,14 +54,14 @@ public class PrivateChatButtonActions {
 
     @Getter
     private EventHandler<MouseEvent> onClearButtonClicked = e -> {
-        Button button = (Button) e.getTarget();
+        Button button = (Button) e.getSource();
         String tabId = (String) button.getProperties().get(Constants.TAB_ID);
         chatMessageManager.clearPrivateChatMessage(tabId);
     };
 
     @Getter
     private EventHandler<MouseEvent> onSendFileButtonClicked = e -> {
-        Button button = (Button) e.getTarget();
+        Button button = (Button) e.getSource();
         UserVO userVO = (UserVO) button.getProperties().get(Constants.USER_VO);
         //弹出windows文件选框
         FileChooser fileChooser = new FileChooser();
@@ -74,7 +74,7 @@ public class PrivateChatButtonActions {
 
     public EventHandler<MouseEvent> getOnSendButtonClicked(TextArea textArea) {
         return e -> {
-            Button button = (Button) e.getTarget();
+            Button button = (Button) e.getSource();
             UserVO userVO = (UserVO) button.getProperties().get(Constants.USER_VO);
             try {
                 this.handlePrivateMessageSend(textArea, userVO);
@@ -86,7 +86,7 @@ public class PrivateChatButtonActions {
 
     public EventHandler<KeyEvent> getOnShortcutKeyPressed() {
         return e -> {
-            TextArea textArea = (TextArea) e.getTarget();
+            TextArea textArea = (TextArea) e.getSource();
             UserVO userVO = (UserVO) textArea.getProperties().get(Constants.USER_VO);
             if (Constants.SEND_MESSAGE_SHORTCUT.match(e)) {
                 try {
