@@ -10,6 +10,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import lombok.Getter;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
@@ -34,8 +35,6 @@ public class PrivateChatButtonActions {
     @Resource
     private ChatMessageManager chatMessageManager;
     @Resource
-    private UdpServer udpServer;
-    @Resource
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private TcpClient tcpClient;
@@ -43,6 +42,8 @@ public class PrivateChatButtonActions {
     private PrivateChatTabManager privateChatTabManager;
     @Resource
     private FileTaskButtonActions fileTaskButtonActions;
+    @Resource
+    private ApplicationContext applicationContext;
 
     private static final String CLEAR_BTN_CLASS = "clear-btn";
     private static final String SEND_BTN_CLASS = "send-btn";
@@ -83,18 +84,19 @@ public class PrivateChatButtonActions {
         };
     }
 
-    @Getter
-    private EventHandler<KeyEvent> onShortcutKeyPressed = e -> {
-        TextArea textArea = (TextArea) e.getTarget();
-        UserVO userVO = (UserVO) textArea.getProperties().get(Constants.USER_VO);
-        if (Constants.SEND_MESSAGE_SHORTCUT.match(e)) {
-            try {
-                this.handlePrivateMessageSend(textArea, userVO);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
+    public EventHandler<KeyEvent> getOnShortcutKeyPressed() {
+        return e -> {
+            TextArea textArea = (TextArea) e.getTarget();
+            UserVO userVO = (UserVO) textArea.getProperties().get(Constants.USER_VO);
+            if (Constants.SEND_MESSAGE_SHORTCUT.match(e)) {
+                try {
+                    this.handlePrivateMessageSend(textArea, userVO);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
             }
-        }
-    };
+        };
+    }
 
     public void handlePrivateMessageSend(TextArea textArea, UserVO userVO) throws Exception {
         //清除输入框文本，并发送文本
@@ -105,7 +107,7 @@ public class PrivateChatButtonActions {
         }
         textArea.clear();
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
-        udpServer.sendChatMessage(text, userVO.getAddress(), UdpCommonDataTypeEnum.PRIVATE_CHAT_MESSAGE);
+        applicationContext.getBean(UdpServer.class).sendChatMessage(text, userVO.getAddress(), UdpCommonDataTypeEnum.PRIVATE_CHAT_MESSAGE);
         this.showChatMessage(tabId, text, currentUser.getId(), currentUser.getUsername());
     }
 
@@ -115,7 +117,7 @@ public class PrivateChatButtonActions {
 
     public BiFunction<UserVO, Button, UserVO> getPrivateChatButtonAction(TabPane tabPane) {
         return (userVO, button) -> {
-            Tab tab = getOrInitPrivateChatTab(tabPane, userVO);
+            Tab tab = this.getOrInitPrivateChatTab(tabPane, userVO);
             //选定该tab
             tabPane.getSelectionModel().select(tab);
             return userVO;
