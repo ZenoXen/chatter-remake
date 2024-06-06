@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.util.Constants;
 
 import java.util.HashMap;
 import java.util.Map;

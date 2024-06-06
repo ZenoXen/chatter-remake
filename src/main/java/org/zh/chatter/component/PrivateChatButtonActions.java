@@ -130,21 +130,22 @@ public class PrivateChatButtonActions {
             try {
                 //将新tab添加到tab条上
                 tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
+                tab.getProperties().put(Constants.USER_VO, userVO);
                 this.setChildrenPropertiesAndActions(tab);
                 tabPane.getTabs().add(tab);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-        tab.getProperties().put(Constants.USER_VO, userVO);
         return tab;
     }
 
     private void setChildrenPropertiesAndActions(Tab newTab) {
         String tabId = newTab.getId();
+        UserVO userVO = (UserVO) newTab.getProperties().get(Constants.USER_VO);
         VBox vbox = (VBox) newTab.getContent();
         List<Node> nodes = NodeUtil.getNestedNodesByStyleClass(vbox);
-        nodes.forEach(n -> this.doSetNodeProperties(n, tabId, (UserVO) newTab.getProperties().get(Constants.USER_VO)));
+        nodes.forEach(n -> this.doSetNodeProperties(n, tabId, userVO));
         //将ObservableList关联到ListView上
         ListView<ChatMessageVO> listView = (ListView<ChatMessageVO>) NodeUtil.findFirstNodeByStyleClass(nodes, MESSAGE_LIST_VIEW_CLASS, Node.class);
         listView.setItems(chatMessageManager.initPrivateChatMessageList(tabId));
