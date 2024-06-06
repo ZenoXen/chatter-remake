@@ -74,13 +74,13 @@ public class TcpClient {
         group.shutdownGracefully();
     }
 
-    public Channel connectHost(InetAddress host) {
+    public Channel connectHost(InetAddress host, int port) {
         Channel existingChannel = tcpConnectionManager.getChannel(host);
         if (existingChannel != null) {
             return existingChannel;
         }
         try {
-            Channel channel = bootstrap.connect(host, serverTcpPort).sync().channel();
+            Channel channel = bootstrap.connect(host, port).sync().channel();
             tcpConnectionManager.addOrUpdateChannel(host, channel);
             return channel;
         } catch (Exception e) {
@@ -99,7 +99,7 @@ public class TcpClient {
             return;
         }
         //保存channel（用于传输完成后关闭），发送文件传输请求
-        Channel channel = this.connectHost(userVO.getAddress());
+        Channel channel = this.connectHost(userVO.getAddress(), serverTcpPort);
         String taskId = IdUtil.genId();
         String fileName = file.getName();
         long fileSize = file.length();
@@ -119,8 +119,8 @@ public class TcpClient {
         log.info("发送文件请求到{}：{}", userVO.getAddress(), tcpCommonDataDTO);
     }
 
-    public void sendRemotePrivateChatUserInfoExchangeRequest(InetAddress address) {
-        Channel channel = this.connectHost(address);
+    public void sendRemotePrivateChatUserInfoExchangeRequest(InetAddress address, int port) {
+        Channel channel = this.connectHost(address, port);
         String sessionId = IdUtil.genId();
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
         RemotePrivateChatUserInfoExchangeBO requestBO = new RemotePrivateChatUserInfoExchangeBO();

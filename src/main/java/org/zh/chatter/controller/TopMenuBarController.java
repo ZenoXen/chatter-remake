@@ -122,13 +122,17 @@ public class TopMenuBarController {
         addressInputDialog.setContentText(null);
         Optional<String> inputAddress = addressInputDialog.showAndWait();
         inputAddress.ifPresent(addr -> {
+            String[] split = addr.split(":");
+            if (split.length < 2) {
+                throw new RuntimeException("远程地址输入错误");
+            }
             InetAddress inetAddress;
             try {
-                inetAddress = InetAddress.getByName(addr);
+                inetAddress = InetAddress.getByName(split[0]);
             } catch (UnknownHostException e) {
                 throw new RuntimeException(e);
             }
-            tcpClient.sendRemotePrivateChatUserInfoExchangeRequest(inetAddress);
+            tcpClient.sendRemotePrivateChatUserInfoExchangeRequest(inetAddress, Integer.parseInt(split[1]));
         });
     }
 }
