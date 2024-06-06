@@ -11,13 +11,16 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.component.UserListDialog;
-import org.zh.chatter.manager.*;
+import org.zh.chatter.manager.ChatMessageManager;
+import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.NodeManager;
+import org.zh.chatter.manager.PrivateChatTabManager;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.network.UdpServer;
@@ -29,7 +32,7 @@ import java.util.ResourceBundle;
 
 //todo 帮助文档
 @Controller
-public class ChatAreaController implements Initializable {
+public class ChatAreaController implements Initializable, InitializingBean {
     @FXML
     private TextArea groupInputArea;
     @FXML
@@ -45,18 +48,21 @@ public class ChatAreaController implements Initializable {
     @Resource
     private ChatMessageManager chatMessageManager;
     @Resource
-    private FileTaskManager fileTaskManager;
-    @Resource
     private FileTaskButtonActions fileTaskButtonActions;
     @Resource
     private PrivateChatTabManager privateChatTabManager;
-    @Autowired
+    @Resource
     private PrivateChatButtonActions privateChatButtonActions;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         groupMessageArea.setItems(chatMessageManager.getGroupChatMessageList());
         groupMessageArea.setCellFactory(c -> new ChatMessageCell());
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        privateChatTabManager.setChatArea(chatArea);
     }
 
     public void handleGroupMessageSend() throws Exception {

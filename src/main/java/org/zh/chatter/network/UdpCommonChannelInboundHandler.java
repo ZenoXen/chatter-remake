@@ -6,19 +6,23 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.annotation.Resource;
+import javafx.scene.control.Tab;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.enums.NotificationTypeEnum;
 import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.NodeManager;
 import org.zh.chatter.manager.NotificationManager;
+import org.zh.chatter.manager.PrivateChatTabManager;
 import org.zh.chatter.model.bo.ChatMessageBO;
 import org.zh.chatter.model.bo.NodeBO;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.NotificationVO;
+import org.zh.chatter.model.vo.UserVO;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
@@ -36,6 +40,10 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
     private ChatMessageManager chatMessageManager;
     @Resource
     private NotificationManager notificationManager;
+    @Resource
+    private PrivateChatButtonActions privateChatButtonActions;
+    @Resource
+    private PrivateChatTabManager privateChatTabManager;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws Exception {
@@ -86,8 +94,9 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
     private void handlePrivateChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
         ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
         NodeUserBO user = chatMessageBO.getUser();
-        //todo 单独做一个私聊窗口
-        this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
-        chatMessageManager.addGroupChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
+        InetAddress fromAddress = udpCommonDataDTO.getFromAddress();
+        this.doHandleHeartBeat(user, fromAddress);
+        Tab tab = privateChatButtonActions.getOrInitPrivateChatTab(privateChatTabManager.getChatArea(), new UserVO(user.getId(), user.getUsername(), fromAddress, false));
+        chatMessageManager.addPrivateChatMessage(tab.getId(), new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
 }

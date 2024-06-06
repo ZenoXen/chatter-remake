@@ -2,6 +2,9 @@ package org.zh.chatter.manager;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -11,6 +14,9 @@ import java.util.Map;
 
 @Component
 public class PrivateChatTabManager {
+    @Getter
+    @Setter
+    private TabPane chatArea;
     private final Map<String, Tab> tabMap;
     private static final String PRIVATE_CHAT_TAB_FXML_PATH = "fxml/private-chat-tab.fxml";
     private static final String TAB_ID_PREFIX = "private_chat_";

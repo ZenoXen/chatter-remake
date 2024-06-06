@@ -115,22 +115,27 @@ public class PrivateChatButtonActions {
 
     public BiFunction<UserVO, Button, UserVO> getPrivateChatButtonAction(TabPane tabPane) {
         return (userVO, button) -> {
-            Tab tab = privateChatTabManager.getTab(userVO.getId());
-            if (tab == null) {
-                try {
-                    //将新tab添加到tab条上
-                    tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
-                    this.setChildrenPropertiesAndActions(tab);
-                    tabPane.getTabs().add(tab);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            tab.getProperties().put(Constants.USER_VO, userVO);
+            Tab tab = getOrInitPrivateChatTab(tabPane, userVO);
             //选定该tab
             tabPane.getSelectionModel().select(tab);
             return userVO;
         };
+    }
+
+    public Tab getOrInitPrivateChatTab(TabPane tabPane, UserVO userVO) {
+        Tab tab = privateChatTabManager.getTab(userVO.getId());
+        if (tab == null) {
+            try {
+                //将新tab添加到tab条上
+                tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
+                this.setChildrenPropertiesAndActions(tab);
+                tabPane.getTabs().add(tab);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        tab.getProperties().put(Constants.USER_VO, userVO);
+        return tab;
     }
 
     private void setChildrenPropertiesAndActions(Tab newTab) {
