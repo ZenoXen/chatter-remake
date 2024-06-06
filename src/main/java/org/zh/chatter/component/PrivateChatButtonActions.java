@@ -1,6 +1,7 @@
 package org.zh.chatter.component;
 
 import jakarta.annotation.Resource;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -132,7 +133,8 @@ public class PrivateChatButtonActions {
                 tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
                 tab.getProperties().put(Constants.USER_VO, userVO);
                 this.setChildrenPropertiesAndActions(tab);
-                tabPane.getTabs().add(tab);
+                Tab finalTab = tab;
+                Platform.runLater(() -> tabPane.getTabs().add(finalTab));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
