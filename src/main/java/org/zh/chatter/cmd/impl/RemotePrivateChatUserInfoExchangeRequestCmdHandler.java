@@ -37,7 +37,7 @@ public class RemotePrivateChatUserInfoExchangeRequestCmdHandler implements TcpCo
         userVO.setAddress(((InetSocketAddress) ctx.channel().remoteAddress()).getAddress());
         userVO.setIsMySelf(false);
         //保存聊天tab
-        privateChatButtonActions.getOrInitPrivateChatTab(privateChatTabManager.getChatArea(), userVO);
+        privateChatButtonActions.getOrInitPrivateChatTab(privateChatTabManager.getChatArea(), userVO, ctx.channel(), dataDTO.getSessionId());
         //交换用户信息
         RemotePrivateChatUserInfoExchangeBO responseBO = new RemotePrivateChatUserInfoExchangeBO();
         responseBO.setId(currentUser.getId());

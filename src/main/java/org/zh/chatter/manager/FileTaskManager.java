@@ -1,5 +1,6 @@
 package org.zh.chatter.manager;
 
+import jakarta.annotation.Resource;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import lombok.Getter;
@@ -24,6 +25,8 @@ public class FileTaskManager {
     private final ObservableList<FileTaskCellVO> inactiveTasks;
     @Getter
     private final ObservableList<FileTaskCellVO> ongoingTasks;
+    @Resource
+    private TcpConnectionManager tcpConnectionManager;
 
     public FileTaskManager() {
         this.map = new LinkedHashMap<>();
@@ -60,6 +63,9 @@ public class FileTaskManager {
             ongoingTasks.remove(cellVO);
             inactiveTasks.add(cellVO);
             this.closeFile(fileTaskBO);
+            if (cellVO.getIsMySelf()) {
+                tcpConnectionManager.deductReferenceCount(fileTaskBO.getChannel());
+            }
         }
         log.debug("添加/更新文件任务：id = {} status = {}", taskId, fileTaskBO.getStatus());
     }

@@ -1,5 +1,6 @@
 package org.zh.chatter.controller;
 
+import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -11,15 +12,13 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
 import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.component.UserListDialog;
-import org.zh.chatter.manager.ChatMessageManager;
-import org.zh.chatter.manager.CurrentUserInfoHolder;
-import org.zh.chatter.manager.NodeManager;
-import org.zh.chatter.manager.PrivateChatTabManager;
+import org.zh.chatter.manager.*;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.network.UdpServer;
@@ -52,6 +51,8 @@ public class ChatAreaController implements Initializable {
     private PrivateChatTabManager privateChatTabManager;
     @Resource
     private PrivateChatButtonActions privateChatButtonActions;
+    @Autowired
+    private TcpConnectionManager tcpConnectionManager;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -97,6 +98,9 @@ public class ChatAreaController implements Initializable {
 
     public void handleClosePrivateChatTab(Event event) {
         Tab tab = (Tab) event.getSource();
+        if ((Boolean) tab.getProperties().getOrDefault(Constants.IS_CLIENT_TAB, false)) {
+            tcpConnectionManager.deductReferenceCount((Channel) tab.getProperties().get(Constants.CHANNEL));
+        }
         privateChatTabManager.removeTab(tab.getId());
     }
 }

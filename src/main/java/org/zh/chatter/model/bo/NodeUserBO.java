@@ -5,10 +5,14 @@ import cn.hutool.core.util.RandomUtil;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
-public class NodeUserBO {
+public class NodeUserBO implements Serializable {
+    @Serial
+    private static final long serialVersionUID = -1943639115009854874L;
     private String id;
     private String username;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

@@ -42,7 +42,11 @@ public enum TcpCmdTypeEnum {
     /**
      * 私聊信交换响应
      */
-    REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_RESPONSE((byte) 0x8, RemotePrivateChatUserInfoExchangeBO.class, RemotePrivateChatUserInfoExchangeResponseCmdHandler.class);
+    REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_RESPONSE((byte) 0x8, RemotePrivateChatUserInfoExchangeBO.class, RemotePrivateChatUserInfoExchangeResponseCmdHandler.class),
+    /**
+     * 私聊信息
+     */
+    PRIVATE_CHAT_MESSAGE((byte) 0x9, ChatMessageBO.class, PrivateChatMessageCmdHandler.class);
 
     private final byte code;
     private final Class<? extends Serializable> payloadClass;

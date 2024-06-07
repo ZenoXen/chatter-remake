@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.annotation.Resource;
-import javafx.scene.control.Tab;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.component.PrivateChatButtonActions;
@@ -22,7 +21,6 @@ import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.dto.UdpCommonDataDTO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.NotificationVO;
-import org.zh.chatter.model.vo.UserVO;
 
 import java.net.InetAddress;
 import java.time.LocalDateTime;
@@ -52,7 +50,6 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
             case HEARTBEAT -> this.handleHeartbeat(ctx, udpCommonDataDTO);
             case GROUP_CHAT_MESSAGE -> this.handleGroupChatMessage(ctx, udpCommonDataDTO);
             case OFFLINE_NOTIFICATION -> this.handleOfflineNotification(ctx, udpCommonDataDTO);
-            case PRIVATE_CHAT_MESSAGE -> this.handlePrivateChatMessage(ctx, udpCommonDataDTO);
             default -> log.error("接收到未知类型的udp消息：{}", udpCommonDataDTO);
         }
     }
@@ -89,13 +86,5 @@ public class UdpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
         NodeUserBO user = chatMessageBO.getUser();
         this.doHandleHeartBeat(user, udpCommonDataDTO.getFromAddress());
         chatMessageManager.addGroupChatMessage(new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
-    }
-
-    private void handlePrivateChatMessage(ChannelHandlerContext ctx, UdpCommonDataDTO udpCommonDataDTO) throws JsonProcessingException {
-        ChatMessageBO chatMessageBO = objectMapper.readValue(udpCommonDataDTO.getContent(), ChatMessageBO.class);
-        NodeUserBO user = chatMessageBO.getUser();
-        InetAddress fromAddress = udpCommonDataDTO.getFromAddress();
-        Tab tab = privateChatButtonActions.getOrInitPrivateChatTab(privateChatTabManager.getChatArea(), new UserVO(user.getId(), user.getUsername(), fromAddress, false));
-        chatMessageManager.addPrivateChatMessage(tab.getId(), new ChatMessageVO(user.getId(), user.getUsername(), chatMessageBO.getMessage(), chatMessageBO.getSendTime()));
     }
 }

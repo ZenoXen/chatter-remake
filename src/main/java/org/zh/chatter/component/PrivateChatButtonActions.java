@@ -1,7 +1,9 @@
 package org.zh.chatter.component;
 
+import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import javafx.application.Platform;
+import javafx.collections.ObservableMap;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -11,9 +13,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import lombok.Getter;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.context.ApplicationContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.zh.chatter.enums.UdpCommonDataTypeEnum;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.PrivateChatTabManager;
@@ -21,7 +22,6 @@ import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
 import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.network.TcpClient;
-import org.zh.chatter.network.UdpServer;
 import org.zh.chatter.util.Constants;
 import org.zh.chatter.util.NodeUtil;
 
@@ -43,8 +43,8 @@ public class PrivateChatButtonActions {
     private PrivateChatTabManager privateChatTabManager;
     @Resource
     private FileTaskButtonActions fileTaskButtonActions;
-    @Resource
-    private ApplicationContext applicationContext;
+    @Value("${app.port.tcp}")
+    private Integer tcpPort;
 
     private static final String CLEAR_BTN_CLASS = "clear-btn";
     private static final String SEND_BTN_CLASS = "send-btn";
@@ -108,7 +108,10 @@ public class PrivateChatButtonActions {
         }
         textArea.clear();
         NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
-        applicationContext.getBean(UdpServer.class).sendChatMessage(text, userVO.getAddress(), UdpCommonDataTypeEnum.PRIVATE_CHAT_MESSAGE);
+        Tab tab = privateChatTabManager.getTabByTabId(tabId);
+        Channel channel = (Channel) tab.getProperties().get(Constants.CHANNEL);
+        String sessionId = tab.getProperties().get(Constants.SESSION_ID).toString();
+        tcpClient.sendPrivateChatMessage(channel, sessionId, text);
         this.showChatMessage(tabId, text, currentUser.getId(), currentUser.getUsername());
     }
 
@@ -118,20 +121,21 @@ public class PrivateChatButtonActions {
 
     public BiFunction<UserVO, Button, UserVO> getPrivateChatButtonAction(TabPane tabPane) {
         return (userVO, button) -> {
-            Tab tab = this.getOrInitPrivateChatTab(tabPane, userVO);
-            //选定该tab
-            tabPane.getSelectionModel().select(tab);
+            tcpClient.sendRemotePrivateChatUserInfoExchangeRequest(userVO.getAddress(), tcpPort);
             return userVO;
         };
     }
 
-    public Tab getOrInitPrivateChatTab(TabPane tabPane, UserVO userVO) {
-        Tab tab = privateChatTabManager.getTab(userVO.getId());
+    public Tab getOrInitPrivateChatTab(TabPane tabPane, UserVO userVO, Channel channel, String sessionId) {
+        Tab tab = privateChatTabManager.getTabByTargetUserId(userVO.getId());
         if (tab == null) {
             try {
                 //将新tab添加到tab条上
                 tab = privateChatTabManager.addTab(userVO.getId(), userVO.getUsername());
-                tab.getProperties().put(Constants.USER_VO, userVO);
+                ObservableMap<Object, Object> properties = tab.getProperties();
+                properties.put(Constants.USER_VO, userVO);
+                properties.put(Constants.CHANNEL, channel);
+                properties.put(Constants.SESSION_ID, sessionId);
                 this.setChildrenPropertiesAndActions(tab);
                 Tab finalTab = tab;
                 Platform.runLater(() -> tabPane.getTabs().add(finalTab));

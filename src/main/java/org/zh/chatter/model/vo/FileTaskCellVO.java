@@ -31,6 +31,7 @@ public class FileTaskCellVO {
 
     public static FileTaskCellVO convertFromFileTaskBO(FileTaskBO fileTaskBO) {
         return FileTaskCellVO.builder()
+                .isMySelf(fileTaskBO.isMySelf())
                 .fileName(new SimpleStringProperty(fileTaskBO.getFileName()))
                 .fileSize(new SimpleStringProperty(FileUtil.readableFileSize(fileTaskBO.getFileSize())))
                 .senderId(new SimpleStringProperty(fileTaskBO.getSenderId()))

@@ -16,10 +16,7 @@ import org.zh.chatter.enums.TcpCmdTypeEnum;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
 import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.TcpConnectionManager;
-import org.zh.chatter.model.bo.FileTaskBO;
-import org.zh.chatter.model.bo.FileTransferRequestBO;
-import org.zh.chatter.model.bo.NodeUserBO;
-import org.zh.chatter.model.bo.RemotePrivateChatUserInfoExchangeBO;
+import org.zh.chatter.model.bo.*;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.util.Constants;
@@ -27,6 +24,8 @@ import org.zh.chatter.util.IdUtil;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.time.LocalDateTime;
 
 @Component
 @Slf4j
@@ -75,18 +74,17 @@ public class TcpClient {
     }
 
     public Channel connectHost(InetAddress host, int port) {
-        Channel existingChannel = tcpConnectionManager.getChannel(host);
-        if (existingChannel != null) {
-            return existingChannel;
+        Channel channel = tcpConnectionManager.getChannel(host);
+        if (channel == null) {
+            try {
+                channel = bootstrap.connect(host, port).sync().channel();
+                return channel;
+            } catch (Exception e) {
+                log.error("建立tcp连接失败：");
+                throw new RuntimeException(e);
+            }
         }
-        try {
-            Channel channel = bootstrap.connect(host, port).sync().channel();
-            tcpConnectionManager.addOrUpdateChannel(host, channel);
-            return channel;
-        } catch (Exception e) {
-            log.error("建立tcp连接失败：", e);
-        }
-        return null;
+        return channel;
     }
 
     public void sendFileTransferRequest(UserVO userVO, File file) {
@@ -115,6 +113,7 @@ public class TcpClient {
         requestBO.setFileSize(fileSize);
         requestBO.setFilename(fileName);
         TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO);
+        tcpConnectionManager.addReferenceCount(channel);
         channel.writeAndFlush(tcpCommonDataDTO);
         log.info("发送文件请求到{}：{}", userVO.getAddress(), tcpCommonDataDTO);
     }
@@ -127,7 +126,16 @@ public class TcpClient {
         requestBO.setId(currentUser.getId());
         requestBO.setUsername(currentUser.getUsername());
         TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.REMOTE_PRIVATE_CHAT_USER_INFO_EXCHANGE_REQUEST, sessionId, currentUser.getId(), requestBO);
+        tcpConnectionManager.addReferenceCount(channel);
         channel.writeAndFlush(tcpCommonDataDTO);
         log.info("发送私聊用户信息到{}：{}", address, tcpCommonDataDTO);
+    }
+
+    public void sendPrivateChatMessage(Channel channel, String sessionId, String message) {
+        NodeUserBO currentUser = currentUserInfoHolder.getCurrentUser();
+        ChatMessageBO chatMessageBO = new ChatMessageBO(currentUser, message, LocalDateTime.now());
+        TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.PRIVATE_CHAT_MESSAGE, sessionId, currentUser.getId(), chatMessageBO);
+        channel.writeAndFlush(tcpCommonDataDTO);
+        log.info("发送私聊消息到{}：{}", ((InetSocketAddress) channel.remoteAddress()).getAddress(), tcpCommonDataDTO);
     }
 }

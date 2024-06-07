@@ -11,8 +11,7 @@ import java.util.stream.Collectors;
 public enum UdpCommonDataTypeEnum {
     HEARTBEAT(1),
     GROUP_CHAT_MESSAGE(2),
-    OFFLINE_NOTIFICATION(3),
-    PRIVATE_CHAT_MESSAGE(4);
+    OFFLINE_NOTIFICATION(3);
     private final int code;
 
     private static final Map<Integer, UdpCommonDataTypeEnum> CODE_MAP;

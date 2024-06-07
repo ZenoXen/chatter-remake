@@ -42,8 +42,12 @@ public class PrivateChatTabManager {
         return newTab;
     }
 
-    public Tab getTab(String targetUserId) {
+    public Tab getTabByTargetUserId(String targetUserId) {
         return tabMap.get(this.buildTabId(targetUserId));
+    }
+
+    public Tab getTabByTabId(String tabId) {
+        return tabMap.get(tabId);
     }
 
     public void removeTab(String tabId) {
