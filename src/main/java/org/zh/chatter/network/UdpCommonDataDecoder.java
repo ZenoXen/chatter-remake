@@ -47,10 +47,12 @@ public class UdpCommonDataDecoder extends MessageToMessageDecoder<DatagramPacket
         }
         UdpCommonDataDTO udpCommonDataDTO = objectMapper.readValue(byteBuf.toString(StandardCharsets.UTF_8), UdpCommonDataDTO.class);
         udpCommonDataDTO.setFromAddress(sender.getAddress());
-        if (messageFilterCache.containsKey(udpCommonDataDTO.getMessageId())) {
-            log.warn("收到重复udp消息，抛弃：{}", udpCommonDataDTO.getMessageId());
+        String messageId = udpCommonDataDTO.getMessageId();
+        if (messageFilterCache.containsKey(messageId)) {
+            log.warn("收到重复udp消息，抛弃：{}", messageId);
             return;
         }
+        messageFilterCache.put(messageId, udpCommonDataDTO);
         log.debug("接收commonDataDTO: {}", udpCommonDataDTO);
         out.add(udpCommonDataDTO);
     }
