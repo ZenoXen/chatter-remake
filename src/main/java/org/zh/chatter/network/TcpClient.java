@@ -9,7 +9,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
 import org.zh.chatter.enums.TcpCmdTypeEnum;
@@ -30,15 +29,13 @@ import java.time.LocalDateTime;
 @Slf4j
 public class TcpClient {
     private final EventLoopGroup group;
-    private final Integer serverTcpPort;
     private final Bootstrap bootstrap;
     private final FileTaskManager fileTaskManager;
     private final CurrentUserInfoHolder currentUserInfoHolder;
     private final TcpConnectionManager tcpConnectionManager;
 
 
-    public TcpClient(@Value("${app.port.tcp}") Integer port,
-                     TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
+    public TcpClient(TcpCommonChannelInboundHandler tcpCommonChannelInboundHandler,
                      TcpCommonDataEncoder tcpCommonDataEncoder,
                      FileTaskManager fileTaskManager,
                      CurrentUserInfoHolder currentUserInfoHolder,
@@ -61,7 +58,6 @@ public class TcpClient {
                     }
                 });
         this.group = group;
-        this.serverTcpPort = port;
         this.bootstrap = bootstrap;
         this.fileTaskManager = fileTaskManager;
         this.currentUserInfoHolder = currentUserInfoHolder;
@@ -72,7 +68,7 @@ public class TcpClient {
         group.shutdownGracefully();
     }
 
-    public Channel connectHost(InetAddress host, int port) {
+    private Channel connectHost(InetAddress host, int port) {
         Channel channel = tcpConnectionManager.getChannel(host);
         if (channel == null) {
             try {
@@ -86,7 +82,7 @@ public class TcpClient {
         return channel;
     }
 
-    public void sendFileTransferRequest(File file, Channel channel) {
+    public void sendFileTransferRequest(Channel channel, File file) {
         //文件是目录，或者不存在，跳过
         if (!FileUtil.exist(file) || FileUtil.isDirectory(file)) {
             return;

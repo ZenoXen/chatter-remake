@@ -5,10 +5,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.zh.chatter.model.vo.UserVO;
 
 import java.util.List;
+import java.util.function.Function;
 
 @Slf4j
 public class UserListDialog extends Dialog<Void> {
@@ -23,7 +25,7 @@ public class UserListDialog extends Dialog<Void> {
     private static final int NAME_COLUMN_MAX_WIDTH = 150;
     private static final int HEIGHT = 500;
 
-    public UserListDialog(List<UserVO> users, FileTaskButtonActions fileTaskButtonActions, PrivateChatButtonActions privateChatButtonActions, TabPane tabPane) {
+    public UserListDialog(List<UserVO> users, PrivateChatButtonActions privateChatButtonActions, TabPane tabPane) {
         this.setTitle(DIALOG_TITLE);
         TableView<UserVO> tableView = new TableView<>();
         TableColumn<UserVO, String> idColumn = new TableColumn<>(ID_COLUMN_NAME);
@@ -33,7 +35,7 @@ public class UserListDialog extends Dialog<Void> {
         nameColumn.setMaxWidth(NAME_COLUMN_MAX_WIDTH);
         idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
         idColumn.setMaxWidth(ID_COLUMN_MAX_WIDTH);
-        privateChatColumn.setCellFactory(ActionButtonTableCell.forTableColumn(PRIVATE_CHAT_BUTTON_TEXT, privateChatButtonActions.getPrivateChatButtonAction(tabPane), fileTaskButtonActions.getIsMySelfShowAction()));
+        privateChatColumn.setCellFactory(ActionButtonTableCell.forTableColumn(PRIVATE_CHAT_BUTTON_TEXT, privateChatButtonActions.getPrivateChatButtonAction(tabPane), this.getIsMySelfShowAction()));
         ObservableList<TableColumn<UserVO, ?>> tableColumns = tableView.getColumns();
         tableColumns.addAll(CollectionUtil.newArrayList(idColumn, nameColumn, privateChatColumn));
         tableView.setItems(FXCollections.observableList(users));
@@ -42,4 +44,7 @@ public class UserListDialog extends Dialog<Void> {
         this.setWidth(WIDTH);
         this.setHeight(HEIGHT);
     }
+
+    @Getter
+    private Function<UserVO, Boolean> isMySelfShowAction = userVO -> !userVO.getIsMySelf();
 }

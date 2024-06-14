@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.manager.ChatMessageManager;
 import org.zh.chatter.manager.CurrentUserInfoHolder;
+import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.PrivateChatTabManager;
 import org.zh.chatter.model.bo.NodeUserBO;
 import org.zh.chatter.model.vo.ChatMessageVO;
@@ -41,6 +42,8 @@ public class PrivateChatButtonActions {
     private TcpClient tcpClient;
     @Resource
     private PrivateChatTabManager privateChatTabManager;
+    @Resource
+    private FileTaskManager fileTaskManager;
     @Resource
     private FileTaskButtonActions fileTaskButtonActions;
     @Value("${app.port.tcp}")
@@ -68,7 +71,7 @@ public class PrivateChatButtonActions {
             fileChooser.setTitle(Constants.SELECT_FILE_TITLE);
             File chosenFile = fileChooser.showOpenDialog(button.getScene().getWindow());
             if (chosenFile != null) {
-                tcpClient.sendFileTransferRequest(chosenFile, channel);
+                tcpClient.sendFileTransferRequest(channel, chosenFile);
             }
         };
     }
@@ -167,11 +170,16 @@ public class PrivateChatButtonActions {
         Button sendFileButton = NodeUtil.findFirstNodeByStyleClass(nodes, SEND_FILE_BTN_CLASS, Button.class);
         sendFileButton.setOnMouseClicked(this.getOnSendFileButtonClicked(channel));
         Button fileListButton = NodeUtil.findFirstNodeByStyleClass(nodes, FILE_LIST_BTN_CLASS, Button.class);
-        fileListButton.setOnMouseClicked(fileTaskButtonActions::openFileTransferDialog);
+        fileListButton.setOnMouseClicked(this::openFileTransferDialog);
     }
 
     private void doSetNodeProperties(Node node, String tabId, UserVO userVO) {
         node.getProperties().put(Constants.TAB_ID, tabId);
         node.getProperties().put(Constants.USER_VO, userVO);
+    }
+
+    public void openFileTransferDialog(MouseEvent mouseEvent) {
+        FileTransferDialog dialog = new FileTransferDialog(Constants.FILE_TRANSFER_DIALOG_WIDTH, Constants.FILE_TRANSFER_DIALOG_HEIGHT, fileTaskButtonActions, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
+        dialog.show();
     }
 }

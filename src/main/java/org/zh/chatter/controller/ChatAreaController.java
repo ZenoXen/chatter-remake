@@ -15,7 +15,6 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.zh.chatter.component.ChatMessageCell;
-import org.zh.chatter.component.FileTaskButtonActions;
 import org.zh.chatter.component.PrivateChatButtonActions;
 import org.zh.chatter.component.UserListDialog;
 import org.zh.chatter.manager.*;
@@ -45,8 +44,6 @@ public class ChatAreaController implements Initializable {
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private ChatMessageManager chatMessageManager;
-    @Resource
-    private FileTaskButtonActions fileTaskButtonActions;
     @Resource
     private PrivateChatTabManager privateChatTabManager;
     @Resource
@@ -88,12 +85,12 @@ public class ChatAreaController implements Initializable {
     }
 
     public void showUserList(MouseEvent mouseEvent) {
-        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), fileTaskButtonActions, privateChatButtonActions, chatArea);
+        UserListDialog dialog = new UserListDialog(nodeManager.getUserList(), privateChatButtonActions, chatArea);
         dialog.show();
     }
 
     public void openFileTransferDialog(MouseEvent mouseEvent) {
-        fileTaskButtonActions.openFileTransferDialog(mouseEvent);
+        privateChatButtonActions.openFileTransferDialog(mouseEvent);
     }
 
     public void handleClosePrivateChatTab(Event event) {

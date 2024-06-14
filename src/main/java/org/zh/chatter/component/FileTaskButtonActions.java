@@ -3,7 +3,6 @@ package org.zh.chatter.component;
 import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
@@ -16,8 +15,6 @@ import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.FileTaskCellVO;
-import org.zh.chatter.model.vo.UserVO;
-import org.zh.chatter.util.Constants;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -77,19 +74,11 @@ public class FileTaskButtonActions {
         return cellVO;
     };
 
-    @Getter
-    private Function<UserVO, Boolean> isMySelfShowAction = userVO -> !userVO.getIsMySelf();
-
     private FileTaskStatusEnum getOppositeStatus(FileTaskStatusEnum status) {
         return FileTaskStatusEnum.TRANSFERRING.equals(status) ? FileTaskStatusEnum.SUSPENDED : FileTaskStatusEnum.TRANSFERRING;
     }
 
     private String getStatusButtonText(FileTaskStatusEnum status) {
         return FileTaskStatusEnum.TRANSFERRING.equals(status) ? "暂停" : "继续";
-    }
-
-    public void openFileTransferDialog(MouseEvent mouseEvent) {
-        FileTransferDialog dialog = new FileTransferDialog(Constants.FILE_TRANSFER_DIALOG_WIDTH, Constants.FILE_TRANSFER_DIALOG_HEIGHT, this, fileTaskManager.getInactiveTasks(), fileTaskManager.getOngoingTasks());
-        dialog.show();
     }
 }
