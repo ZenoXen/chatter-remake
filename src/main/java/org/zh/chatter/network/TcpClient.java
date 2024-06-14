@@ -73,6 +73,7 @@ public class TcpClient {
         if (channel == null) {
             try {
                 channel = bootstrap.connect(host, port).sync().channel();
+                tcpConnectionManager.addOrUpdateChannel(host, channel);
                 return channel;
             } catch (Exception e) {
                 log.error("建立tcp连接失败：");

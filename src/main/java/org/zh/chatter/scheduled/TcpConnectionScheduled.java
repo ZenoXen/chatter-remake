@@ -22,18 +22,20 @@ public class TcpConnectionScheduled {
     /**
      * 每3分钟轮询空闲的tcp连接并关闭
      */
-    @Scheduled(cron = "0 0/3 * * * ?")
+    @Scheduled(cron = "0 0/1 * * * ?")
     public void scheduledCloseIdleTcpConnection() {
         Set<Map.Entry<InetAddress, Channel>> entries = tcpConnectionManager.getAllEntries();
         Set<InetAddress> toRemoveSet = new HashSet<>();
         //从channels过滤出空闲的记录，并逐个关闭
         entries.forEach(entry -> {
             if (entry.getValue() == null) {
+                log.debug("channel不存在，关闭空闲连接：" + entry);
                 toRemoveSet.add(entry.getKey());
                 return;
             }
             //如果使用该channel的引用数量为0，将这些channel关闭
             if (tcpConnectionManager.getReferenceCount(entry.getValue()) <= 0) {
+                log.debug("channel引用数量归0，关闭空闲连接：" + entry);
                 toRemoveSet.add(entry.getKey());
             }
         });
