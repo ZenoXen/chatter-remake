@@ -60,18 +60,18 @@ public class PrivateChatButtonActions {
         chatMessageManager.clearPrivateChatMessage(tabId);
     };
 
-    @Getter
-    private EventHandler<MouseEvent> onSendFileButtonClicked = e -> {
-        Button button = (Button) e.getSource();
-        UserVO userVO = (UserVO) button.getProperties().get(Constants.USER_VO);
-        //弹出windows文件选框
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(Constants.SELECT_FILE_TITLE);
-        File chosenFile = fileChooser.showOpenDialog(button.getScene().getWindow());
-        if (chosenFile != null) {
-            tcpClient.sendFileTransferRequest(userVO, chosenFile);
-        }
-    };
+    private EventHandler<MouseEvent> getOnSendFileButtonClicked(Channel channel) {
+        return e -> {
+            Button button = (Button) e.getSource();
+            //弹出windows文件选框
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle(Constants.SELECT_FILE_TITLE);
+            File chosenFile = fileChooser.showOpenDialog(button.getScene().getWindow());
+            if (chosenFile != null) {
+                tcpClient.sendFileTransferRequest(chosenFile, channel);
+            }
+        };
+    }
 
     public EventHandler<MouseEvent> getOnSendButtonClicked(TextArea textArea) {
         return e -> {
@@ -136,7 +136,7 @@ public class PrivateChatButtonActions {
                 properties.put(Constants.USER_VO, userVO);
                 properties.put(Constants.CHANNEL, channel);
                 properties.put(Constants.SESSION_ID, sessionId);
-                this.setChildrenPropertiesAndActions(tab);
+                this.setChildrenPropertiesAndActions(tab, channel);
                 Tab finalTab = tab;
                 Platform.runLater(() -> tabPane.getTabs().add(finalTab));
             } catch (Exception e) {
@@ -146,7 +146,7 @@ public class PrivateChatButtonActions {
         return tab;
     }
 
-    private void setChildrenPropertiesAndActions(Tab newTab) {
+    private void setChildrenPropertiesAndActions(Tab newTab, Channel channel) {
         String tabId = newTab.getId();
         UserVO userVO = (UserVO) newTab.getProperties().get(Constants.USER_VO);
         VBox vbox = (VBox) newTab.getContent();
@@ -165,7 +165,7 @@ public class PrivateChatButtonActions {
         Button sendButton = NodeUtil.findFirstNodeByStyleClass(nodes, SEND_BTN_CLASS, Button.class);
         sendButton.setOnMouseClicked(this.getOnSendButtonClicked(textArea));
         Button sendFileButton = NodeUtil.findFirstNodeByStyleClass(nodes, SEND_FILE_BTN_CLASS, Button.class);
-        sendFileButton.setOnMouseClicked(this.getOnSendFileButtonClicked());
+        sendFileButton.setOnMouseClicked(this.getOnSendFileButtonClicked(channel));
         Button fileListButton = NodeUtil.findFirstNodeByStyleClass(nodes, FILE_LIST_BTN_CLASS, Button.class);
         fileListButton.setOnMouseClicked(fileTaskButtonActions::openFileTransferDialog);
     }

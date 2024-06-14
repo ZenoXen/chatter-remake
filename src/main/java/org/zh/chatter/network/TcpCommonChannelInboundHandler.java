@@ -51,6 +51,10 @@ public class TcpCommonChannelInboundHandler extends SimpleChannelInboundHandler<
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
         log.error("tcp连接过程中发生异常：", cause);
+        Channel channel = ctx.channel();
+        InetSocketAddress inetSocketAddress = (InetSocketAddress) channel.remoteAddress();
+        InetAddress address = inetSocketAddress.getAddress();
+        tcpConnectionManager.removeAndCloseChannel(address);
     }
 
     @Override

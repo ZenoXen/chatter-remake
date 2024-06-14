@@ -4,7 +4,6 @@ import io.netty.channel.Channel;
 import jakarta.annotation.Resource;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseEvent;
-import javafx.stage.FileChooser;
 import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.zh.chatter.enums.FileTaskStatusEnum;
@@ -18,10 +17,8 @@ import org.zh.chatter.model.bo.FileTransferStatusChangedNotificationBO;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
 import org.zh.chatter.model.vo.FileTaskCellVO;
 import org.zh.chatter.model.vo.UserVO;
-import org.zh.chatter.network.TcpClient;
 import org.zh.chatter.util.Constants;
 
-import java.io.File;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -33,8 +30,6 @@ public class FileTaskButtonActions {
     private CurrentUserInfoHolder currentUserInfoHolder;
     @Resource
     private LockManager lockManager;
-    @Resource
-    private TcpClient tcpClient;
 
     @Getter
     private BiFunction<FileTaskCellVO, Button, FileTaskCellVO> suspendButtonAction = (cellVO, button) -> {
@@ -80,18 +75,6 @@ public class FileTaskButtonActions {
             }
         });
         return cellVO;
-    };
-
-    @Getter
-    private BiFunction<UserVO, Button, UserVO> sendFileButtonAction = (userVO, button) -> {
-        //弹出windows文件选框
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle(Constants.SELECT_FILE_TITLE);
-        File chosenFile = fileChooser.showOpenDialog(button.getScene().getWindow());
-        if (chosenFile != null) {
-            tcpClient.sendFileTransferRequest(userVO, chosenFile);
-        }
-        return userVO;
     };
 
     @Getter

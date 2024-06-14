@@ -18,7 +18,6 @@ import org.zh.chatter.manager.FileTaskManager;
 import org.zh.chatter.manager.TcpConnectionManager;
 import org.zh.chatter.model.bo.*;
 import org.zh.chatter.model.dto.TcpCommonDataDTO;
-import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.util.Constants;
 import org.zh.chatter.util.IdUtil;
 
@@ -87,17 +86,12 @@ public class TcpClient {
         return channel;
     }
 
-    public void sendFileTransferRequest(UserVO userVO, File file) {
-        //不会给自己发送文件
-        if (userVO.getIsMySelf()) {
-            return;
-        }
+    public void sendFileTransferRequest(File file, Channel channel) {
         //文件是目录，或者不存在，跳过
         if (!FileUtil.exist(file) || FileUtil.isDirectory(file)) {
             return;
         }
         //保存channel（用于传输完成后关闭），发送文件传输请求
-        Channel channel = this.connectHost(userVO.getAddress(), serverTcpPort);
         String taskId = IdUtil.genId();
         String fileName = file.getName();
         long fileSize = file.length();
@@ -115,7 +109,7 @@ public class TcpClient {
         TcpCommonDataDTO tcpCommonDataDTO = TcpCommonDataDTO.encapsulate(TcpCmdTypeEnum.FILE_TRANSFER_REQUEST, taskId, currentUser.getId(), requestBO);
         tcpConnectionManager.addReferenceCount(channel);
         channel.writeAndFlush(tcpCommonDataDTO);
-        log.info("发送文件请求到{}：{}", userVO.getAddress(), tcpCommonDataDTO);
+        log.info("发送文件请求：{}", tcpCommonDataDTO);
     }
 
     public void sendRemotePrivateChatUserInfoExchangeRequest(InetAddress address, int port) {
