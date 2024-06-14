@@ -2,7 +2,9 @@ package org.zh.chatter.manager;
 
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.zh.chatter.event.ChannelClosedEvent;
 
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -14,10 +16,12 @@ import java.util.Set;
 public class TcpConnectionManager {
     private final Map<InetAddress, Channel> addressChannelMap;
     private final Map<String, Integer> channelReferenceCountMap;
+    private final ApplicationContext applicationContext;
 
-    public TcpConnectionManager() {
+    public TcpConnectionManager(ApplicationContext applicationContext) {
         addressChannelMap = new HashMap<>();
         channelReferenceCountMap = new HashMap<>();
+        this.applicationContext = applicationContext;
     }
 
     public Channel getChannel(InetAddress inetAddress) {
@@ -49,6 +53,7 @@ public class TcpConnectionManager {
         if (channel != null && channel.isOpen()) {
             log.debug("关闭channel：{}", inetAddress);
             channel.close();
+            applicationContext.publishEvent(new ChannelClosedEvent(this, channel));
         }
     }
 }

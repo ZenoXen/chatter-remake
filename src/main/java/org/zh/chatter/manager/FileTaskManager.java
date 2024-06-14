@@ -11,16 +11,14 @@ import org.zh.chatter.model.bo.FileTaskBO;
 import org.zh.chatter.model.vo.FileTaskCellVO;
 
 import java.io.RandomAccessFile;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
 public class FileTaskManager {
     private final Map<String, FileTaskBO> map;
     private final Map<String, FileTaskCellVO> cellMap;
+    private final Map<String, List<FileTaskBO>> channelIdTaskMap;
     @Getter
     private final ObservableList<FileTaskCellVO> inactiveTasks;
     @Getter
@@ -31,12 +29,9 @@ public class FileTaskManager {
     public FileTaskManager() {
         this.map = new LinkedHashMap<>();
         this.cellMap = new LinkedHashMap<>();
+        this.channelIdTaskMap = new HashMap<>();
         this.inactiveTasks = FXCollections.observableArrayList();
         this.ongoingTasks = FXCollections.observableArrayList();
-    }
-
-    public List<FileTaskBO> getAllTasks() {
-        return map.values().stream().toList();
     }
 
     public void addOrUpdateTask(FileTaskBO fileTaskBO) {
@@ -57,6 +52,10 @@ public class FileTaskManager {
         if (firstTimeAdded) {
             ongoingTasks.add(cellVO);
             cellMap.put(taskId, cellVO);
+            String channelId = fileTaskBO.getChannel().id().asLongText();
+            List<FileTaskBO> channelTasks = channelIdTaskMap.getOrDefault(channelId, new ArrayList<>());
+            channelTasks.add(fileTaskBO);
+            channelIdTaskMap.put(channelId, channelTasks);
         }
         //任务变成终结状态
         if (taskFinished) {
@@ -105,5 +104,9 @@ public class FileTaskManager {
 
     public FileTaskBO getTask(String taskId) {
         return map.get(taskId);
+    }
+
+    public List<FileTaskBO> getTasksByChannelId(String channelId) {
+        return channelIdTaskMap.getOrDefault(channelId, Collections.emptyList());
     }
 }
