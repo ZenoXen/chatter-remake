@@ -43,7 +43,9 @@ public class NodeManager {
 
     public synchronized NodeBO removeNode(InetAddress address) {
         NodeBO removed = nodeMap.remove(address);
-        userIdNodeMap.remove(removed.getUser().getId());
+        if (removed != null) {
+            userIdNodeMap.remove(removed.getUser().getId());
+        }
         return removed;
     }
 

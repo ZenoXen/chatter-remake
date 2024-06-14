@@ -1,5 +1,6 @@
 package org.zh.chatter.network;
 
+import cn.hutool.cache.Cache;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
@@ -26,6 +27,8 @@ public class UdpCommonDataDecoder extends MessageToMessageDecoder<DatagramPacket
     private ObjectMapper objectMapper;
     @Resource
     private NetworkInterfaceHolder networkInterfaceHolder;
+    @Resource
+    private Cache<String, Object> messageFilterCache;
 
     @Override
     protected void decode(ChannelHandlerContext ctx, DatagramPacket msg, List<Object> out) throws Exception {
@@ -44,6 +47,10 @@ public class UdpCommonDataDecoder extends MessageToMessageDecoder<DatagramPacket
         }
         UdpCommonDataDTO udpCommonDataDTO = objectMapper.readValue(byteBuf.toString(StandardCharsets.UTF_8), UdpCommonDataDTO.class);
         udpCommonDataDTO.setFromAddress(sender.getAddress());
+        if (messageFilterCache.containsKey(udpCommonDataDTO.getMessageId())) {
+            log.warn("收到重复udp消息，抛弃：{}", udpCommonDataDTO.getMessageId());
+            return;
+        }
         log.debug("接收commonDataDTO: {}", udpCommonDataDTO);
         out.add(udpCommonDataDTO);
     }

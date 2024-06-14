@@ -11,6 +11,7 @@ import java.net.InetAddress;
 @NoArgsConstructor
 public class UdpCommonDataDTO {
     private Integer type;
+    private String messageId;
     private InetAddress fromAddress;
     private InetAddress toAddress;
     private Integer port;
