@@ -34,6 +34,7 @@ import org.zh.chatter.model.vo.UserVO;
 import org.zh.chatter.network.UdpCommonChannelInboundHandler;
 import org.zh.chatter.network.UdpCommonDataDecoder;
 import org.zh.chatter.network.UdpCommonDataEncoder;
+import org.zh.chatter.util.IdUtil;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -93,7 +94,7 @@ public class NetworkTests {
         MulticastAddressBO addressBO = networkInterfaceHolder.getSelectedLocalAddress();
         InetSocketAddress multicastAddress = networkInterfaceHolder.getMulticastAddress();
         assert addressBO != null;
-        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.GROUP_CHAT_MESSAGE.getCode(), null, multicastAddress.getAddress(), port, content);
+        UdpCommonDataDTO udpCommonDataDTO = new UdpCommonDataDTO(UdpCommonDataTypeEnum.GROUP_CHAT_MESSAGE.getCode(), IdUtil.genId(), null, multicastAddress.getAddress(), port, content);
         DatagramPacket packet = new DatagramPacket(Unpooled.copiedBuffer(objectMapper.writeValueAsString(udpCommonDataDTO).getBytes(StandardCharsets.UTF_8)), new InetSocketAddress(udpCommonDataDTO.getToAddress(), udpCommonDataDTO.getPort()), new InetSocketAddress(InetAddress.getByName(SENDER_ADDRESS), 7749));
         embeddedChannel.writeInbound(packet);
         //界面上是否有聊天记录
